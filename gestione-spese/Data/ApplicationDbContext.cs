@@ -1,0 +1,84 @@
+﻿using gestione_spese.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
+
+namespace gestione_spese.Data
+{
+    public class ApplicationDbContext : DbContext
+    { 
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
+
+        // Definizione delle tabelle del database basate sui tuoi Model
+        public DbSet<Gruppo> Gruppi { get; set; }
+        public DbSet<Utente> Utenti { get; set; }
+        public DbSet<Spesa> Spese { get; set; }
+        public DbSet<DivisioneSpesa> Divisioni { get; set; } // Modificato nome per coerenza con il Model
+        public DbSet<Riepilogo> Riepiloghi { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // =========================================================
+            // CONFIGURAZIONE RELAZIONI E CHIAVI ESTERNE (FLUENT API)
+            // =========================================================
+
+            // 1. Relazioni per Utente
+            modelBuilder.Entity<Utente>()
+                .HasOne(u => u.Gruppo)
+                .WithMany(g => g.Utenti)
+                .HasForeignKey(u => u.Gruppo_ID)
+                .OnDelete(DeleteBehavior.Cascade); // Se elimini un gruppo, elimini i suoi utenti
+
+            // 2. Relazioni per Spesa (UtenteChePaga)
+            modelBuilder.Entity<Spesa>()
+                .HasOne(s => s.Gruppo)
+                .WithMany(g => g.Spese)
+                .HasForeignKey(s => s.Gruppo_ID)
+                .OnDelete(DeleteBehavior.Restrict); // Previene eliminazioni a cascata multiple
+
+            modelBuilder.Entity<Spesa>()
+                .HasOne(s => s.UtenteChePaga)
+                .WithMany(u => u.SpesePagate)
+                .HasForeignKey(s => s.ChiPaga_ID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 3. Relazioni per DivisioneSpesa
+            modelBuilder.Entity<DivisioneSpesa>()
+                .HasOne(d => d.Spesa)
+                .WithMany(s => s.Divisioni)
+                .HasForeignKey(d => d.Spesa_ID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DivisioneSpesa>()
+                .HasOne(d => d.Utente)
+                .WithMany(u => u.DivisioniSpesa)
+                .HasForeignKey(d => d.Utente_ID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 4. Relazioni per Riepilogo (Fondamentale: due FK verso Utente)
+            modelBuilder.Entity<Riepilogo>()
+                .HasOne(r => r.Gruppo)
+                .WithMany(g => g.Riepiloghetti) // Come definito nel tuo model Gruppo
+                .HasForeignKey(r => r.Gruppo_ID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Riepilogo>()
+                .HasOne(r => r.UtenteCheDeve)
+                .WithMany(u => u.RiepiloghettiDovuti)
+                .HasForeignKey(r => r.ChiDeve_ID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Riepilogo>()
+                .HasOne(r => r.UtenteACuiDeve)
+                .WithMany(u => u.RiepiloghettiRicevuti)
+                .HasForeignKey(r => r.AChiDeve_ID)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+    }
+}
+
