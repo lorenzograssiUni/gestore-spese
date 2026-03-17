@@ -11,7 +11,7 @@ Una Web Application full-stack per la gestione e la divisione delle spese in gru
 
 ---
 
-## 🛠️ Stack Tecnologico
+##  Stack Tecnologico
 
 Il progetto è strutturato in due parti (Frontend e Backend) all'interno di un unico monorepo:
 
@@ -28,7 +28,7 @@ Il progetto è strutturato in due parti (Frontend e Backend) all'interno di un u
 
 ---
 
-## 🚀 Come avviare il progetto in locale
+##  Come avviare il progetto in locale
 
 Segui questi passaggi per scaricare e far girare l'applicazione sul tuo computer.
 
@@ -90,14 +90,14 @@ Il database relazionale contiene le seguenti entità principali:
 
 ---
 
-## 🔌 API e Logica di Calcolo
+##  API e Logica di Calcolo
 
 Il backend espone un'architettura **RESTful** divisa per Controller (`GruppoController`, `SpesaController`, `UtenteController`, ecc.).
 Tra le logiche di business più interessanti c'è l'**algoritmo di pareggio dei debiti** (gestito dal `RiepilogoController`), che elabora i saldi positivi e negativi di ogni utente e restituisce le transazioni ottimali per saldare tutti i conti del gruppo con il minor numero di passaggi possibili.
 
 ---
 
-## 🔜 Sviluppi Futuri (Roadmap)
+##  Sviluppi Futuri (Roadmap)
 - Implementazione del sistema di Autenticazione e Login.
 - Storico delle transazioni e dei pagamenti completati.
 - Ottimizzazione del design pattern (es. integrazione del *Visitor pattern* per alcune logiche di esportazione dati).
