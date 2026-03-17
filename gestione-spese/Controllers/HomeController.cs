@@ -1,14 +1,56 @@
-using gestione_spese.Models;
 using Microsoft.AspNetCore.Mvc;
+using gestione_spese.Models;
 using System.Diagnostics;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace gestione_spese.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly IHttpClientFactory _clientFactory;
+
+        // Inietto IHttpClientFactory per poter fare chiamate alle nostre API REST
+        public HomeController(IHttpClientFactory clientFactory)
         {
-            return View();
+            _clientFactory = clientFactory;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var gruppi = new List<Gruppo>();
+
+            // Creiamo un client per chiamare le nostre API interne
+            var client = _clientFactory.CreateClient();
+
+            // Chiamata GET all'API dei Gruppi
+            // Sostituisci l'URL con la porta esatta in cui gira il tuo progetto (es: https://localhost:7204)
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:5000/api/Gruppo");
+
+            try
+            {
+                var response = await client.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    using var responseStream = await response.Content.ReadAsStreamAsync();
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles
+                    };
+                    gruppi = await JsonSerializer.DeserializeAsync<List<Gruppo>>(responseStream, options);
+
+                }
+            }
+            catch (System.Exception)
+            {
+                // Se l'API non risponde (es. porte sbagliate), passiamo lista vuota per non far crashare la pagina
+                ViewBag.Errore = "Impossibile caricare i gruppi. Verifica che le API siano attive sulla porta 5000.";
+            }
+
+            return View(gruppi);
         }
 
         public IActionResult Privacy()
