@@ -105,5 +105,5 @@ Tra le logiche di business più interessanti c'è l'**algoritmo di pareggio dei 
 
 ---
 
-## 👨‍💻 Autori
+##  Autori
 Sviluppato da **Mattia Negri**,**Lorenzo Grassi**,**Erica Paolasini**,**Simranjit Kaur**  come progetto pratico di web development full-stack.
