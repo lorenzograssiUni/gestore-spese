@@ -5,14 +5,12 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
     const [importo, setImporto] = useState('');
     const [chiPagaId, setChiPagaId] = useState(membri.length > 0 ? membri[0].id : '');
 
-    // Nuovi stati per la divisione della spesa
     const [dividiConTutti, setDividiConTutti] = useState(true);
-    const [utentiCoinvolti, setUtentiCoinvolti] = useState([]); // Array degli ID selezionati
+    const [utentiCoinvolti, setUtentiCoinvolti] = useState([]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
 
-    // Gestione dei checkbox per selezionare con chi si divide
     const handleCheckboxChange = (membroId) => {
         setUtentiCoinvolti(prev => {
             if (prev.includes(membroId)) {
@@ -28,20 +26,17 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
         setIsSubmitting(true);
         setError(null);
 
-        // Se si divide solo con alcuni, controlliamo che almeno uno sia selezionato
         if (!dividiConTutti && utentiCoinvolti.length === 0) {
             setError("Seleziona almeno un membro con cui dividere la spesa.");
             setIsSubmitting(false);
             return;
         }
 
-        // Costruiamo il payload per il C# (Ora combacia con NuovaSpesaDTO)
         const spesaData = {
             gruppo_ID: gruppoId,
             chiPaga_ID: Number(chiPagaId),
             importo: parseFloat(importo),
             descrizione: descrizione,
-            // Se "dividi con tutti" è attivo, passiamo array vuoto (il C# sa già cosa fare)
             utentiCoinvoltiIds: dividiConTutti ? [] : utentiCoinvolti
         };
 
@@ -58,8 +53,8 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
                 throw new Error('Errore durante il salvataggio della spesa');
             }
 
-            onSpesaAggiunta(); // Ricarica il gruppo nella pagina padre
-            onClose();         // Chiude la modale
+            onSpesaAggiunta(); 
+            onClose();         
         } catch (err) {
             console.error(err);
             setError('Impossibile salvare la spesa. Riprova.');
@@ -72,7 +67,6 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 z-50 animate-fade-in">
             <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
-                {/* Header Modale */}
                 <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <h3 className="text-xl font-bold text-gray-800">Aggiungi una spesa</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors">
@@ -82,7 +76,6 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
                     </button>
                 </div>
 
-                {/* Corpo Modale - Scorrevole se ci sono tanti membri */}
                 <div className="p-6 overflow-y-auto">
                     {error && (
                         <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm font-medium border border-red-100">
@@ -91,7 +84,6 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
                     )}
 
                     <form id="spesa-form" onSubmit={handleSubmit} className="space-y-5">
-                        {/* Chi ha pagato */}
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Chi ha pagato?</label>
                             <select
@@ -107,7 +99,6 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            {/* Descrizione */}
                             <div className="col-span-2">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Descrizione (es. Cena, Benzina)</label>
                                 <input
@@ -120,7 +111,6 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
                                 />
                             </div>
 
-                            {/* Importo */}
                             <div className="col-span-2">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Importo (€)</label>
                                 <div className="relative">
@@ -141,7 +131,6 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
                             </div>
                         </div>
 
-                        {/* SEZIONE: CON CHI DIVIDERE */}
                         <div className="border-t border-gray-100 pt-5 mt-2">
                             <label className="block text-sm font-semibold text-gray-700 mb-3">Con chi vuoi dividere?</label>
 
@@ -155,7 +144,6 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
                                 <span className="font-medium text-blue-900">Dividi equamente con tutto il gruppo</span>
                             </div>
 
-                            {/* Lista membri se NON si divide con tutti */}
                             {!dividiConTutti && (
                                 <div className="space-y-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
                                     <p className="text-xs text-gray-500 mb-3 uppercase tracking-wider font-bold">Seleziona chi deve pagare la sua quota:</p>
@@ -182,7 +170,6 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
                     </form>
                 </div>
 
-                {/* Footer con bottoni */}
                 <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 shrink-0">
                     <button
                         type="button"

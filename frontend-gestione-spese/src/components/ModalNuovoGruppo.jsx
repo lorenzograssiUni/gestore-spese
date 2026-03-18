@@ -1,8 +1,4 @@
 import { useState } from 'react';
-
-// Questa modale riceve 2 parametri: 
-// - onClose: funzione per chiuderla
-// - onGruppoCreato: funzione per dire alla HomePage di aggiornare la lista
 function ModalNuovoGruppo({ onClose, onGruppoCreato }) {
     const [nome, setNome] = useState('');
     const [descrizione, setDescrizione] = useState('');
@@ -14,13 +10,12 @@ function ModalNuovoGruppo({ onClose, onGruppoCreato }) {
         setLoading(true);
         setErrore('');
 
-        // Creiamo il JSON esattamente come se lo aspetta .NET
         const nuovoGruppo = {
             nome: nome,
             descrizione: descrizione
         };
 
-        fetch('http://localhost:5000/api/gruppo', { // <-- RICORDA DI CONTROLLARE LA PORTA (5000)
+        fetch('http://localhost:5000/api/gruppo', { 
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -29,7 +24,6 @@ function ModalNuovoGruppo({ onClose, onGruppoCreato }) {
             body: JSON.stringify(nuovoGruppo)
         })
             .then(async response => {
-                // Se c'è un errore, cerchiamo di leggere cosa dice il C#
                 if (!response.ok) {
                     const errText = await response.text();
                     console.error("Errore dal server:", errText);
@@ -39,8 +33,8 @@ function ModalNuovoGruppo({ onClose, onGruppoCreato }) {
             })
             .then(data => {
                 setLoading(false);
-                onGruppoCreato(); // Avvisa la home
-                onClose(); // Chiudi modale
+                onGruppoCreato(); 
+                onClose(); 
             })
             .catch(error => {
                 console.error("Errore fetch:", error);
@@ -52,16 +46,13 @@ function ModalNuovoGruppo({ onClose, onGruppoCreato }) {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Sfondo scuro semitrasparente */}
             <div
                 className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             ></div>
 
-            {/* Contenitore bianco della modale */}
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative z-10 animate-fade-in-up">
 
-                {/* Pulsante "X" per chiudere */}
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"

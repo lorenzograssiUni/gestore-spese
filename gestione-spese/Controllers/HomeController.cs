@@ -12,7 +12,6 @@ namespace gestione_spese.Controllers
     {
         private readonly IHttpClientFactory _clientFactory;
 
-        // Inietto IHttpClientFactory per poter fare chiamate alle nostre API REST
         public HomeController(IHttpClientFactory clientFactory)
         {
             _clientFactory = clientFactory;
@@ -22,11 +21,8 @@ namespace gestione_spese.Controllers
         {
             var gruppi = new List<Gruppo>();
 
-            // Creiamo un client per chiamare le nostre API interne
             var client = _clientFactory.CreateClient();
 
-            // Chiamata GET all'API dei Gruppi
-            // Sostituisci l'URL con la porta esatta in cui gira il tuo progetto (es: https://localhost:7204)
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:5000/api/Gruppo");
 
             try
@@ -46,7 +42,6 @@ namespace gestione_spese.Controllers
             }
             catch (System.Exception)
             {
-                // Se l'API non risponde (es. porte sbagliate), passiamo lista vuota per non far crashare la pagina
                 ViewBag.Errore = "Impossibile caricare i gruppi. Verifica che le API siano attive sulla porta 5000.";
             }
 

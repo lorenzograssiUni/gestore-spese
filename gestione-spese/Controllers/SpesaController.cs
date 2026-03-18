@@ -25,8 +25,8 @@ namespace gestione_spese.Controllers.Api
         public async Task<ActionResult<IEnumerable<Spesa>>> GetSpese()
         {
             return await _context.Spese
-                .Include(s => s.Gruppo)        // Mostra i dati del gruppo
-                .Include(s => s.UtenteChePaga) // Mostra chi ha pagato
+                .Include(s => s.Gruppo)        
+                .Include(s => s.UtenteChePaga)
                 .ToListAsync();
         }
 
@@ -38,7 +38,7 @@ namespace gestione_spese.Controllers.Api
             var spesa = await _context.Spese
                 .Include(s => s.Gruppo)
                 .Include(s => s.UtenteChePaga)
-                .Include(s => s.Divisioni)     // Mostra anche come è stata divisa (se già calcolata)
+                .Include(s => s.Divisioni)     
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (spesa == null)
@@ -72,7 +72,7 @@ namespace gestione_spese.Controllers.Api
         public async Task<ActionResult<Spesa>> PostSpesa([FromBody] NuovaSpesaDTO dto)
         {
             var gruppo = await _context.Gruppi
-                .Include(g => g.Utenti) // Carichiamo i membri del gruppo
+                .Include(g => g.Utenti) 
                 .FirstOrDefaultAsync(g => g.Id == dto.Gruppo_ID);
 
             var utenteEsiste = await _context.Utenti.AnyAsync(u => u.Id == dto.ChiPaga_ID);
@@ -80,7 +80,6 @@ namespace gestione_spese.Controllers.Api
             if (gruppo == null) return BadRequest("Il Gruppo specificato non esiste.");
             if (!utenteEsiste) return BadRequest("L'Utente specificato come pagatore non esiste.");
 
-            // 1. Creiamo la Spesa reale partendo dai dati del DTO
             var nuovaSpesa = new Spesa
             {
                 Gruppo_ID = dto.Gruppo_ID,
@@ -91,26 +90,21 @@ namespace gestione_spese.Controllers.Api
             };
 
             _context.Spese.Add(nuovaSpesa);
-            await _context.SaveChangesAsync(); // Salviamo per generare l'ID della spesa
+            await _context.SaveChangesAsync(); 
 
-            // 2. Calcoliamo con chi dividere la spesa
             List<Utente> utentiDaAddebitare;
 
             if (dto.UtentiCoinvoltiIds == null || !dto.UtentiCoinvoltiIds.Any())
             {
-                // Divisa con TUTTI nel gruppo
                 utentiDaAddebitare = gruppo.Utenti.ToList();
             }
             else
             {
-                // Divisa solo con i membri selezionati dal frontend (Assicuriamoci che Chi Paga sia incluso se si è auto-selezionato)
                 utentiDaAddebitare = gruppo.Utenti.Where(u => dto.UtentiCoinvoltiIds.Contains(u.Id)).ToList();
             }
 
-            // 3. Calcolo quota e creazione delle Divisioni (Quote)
             if (utentiDaAddebitare.Any())
             {
-                // Divisione in parti uguali, arrotondata a 2 decimali
                 decimal quota = Math.Round(nuovaSpesa.Importo / utentiDaAddebitare.Count, 2);
 
                 foreach (var utente in utentiDaAddebitare)

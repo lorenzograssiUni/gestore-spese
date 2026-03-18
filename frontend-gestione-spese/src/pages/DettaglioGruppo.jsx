@@ -68,7 +68,6 @@ function DettaglioGruppo({ gruppoId, onBack }) {
         }
     };
 
-    // --- FUNZIONE ELIMINA GRUPPO ---
     const handleEliminaGruppo = async () => {
         const conferma = window.confirm("Sei sicuro di voler eliminare questo gruppo? Tutte le spese andranno perse in modo irreversibile.");
         if (conferma) {
@@ -87,7 +86,6 @@ function DettaglioGruppo({ gruppoId, onBack }) {
         }
     };
 
-    // --- NUOVA FUNZIONE: ELIMINA SPESA ---
     const handleEliminaSpesa = async (spesaId) => {
         const conferma = window.confirm("Sei sicuro di voler eliminare questa spesa?");
         if (conferma) {
@@ -96,7 +94,7 @@ function DettaglioGruppo({ gruppoId, onBack }) {
                     method: 'DELETE',
                 });
                 if (response.ok) {
-                    caricaDatiGruppo(); // Ricarica gruppo e ricalcola i bilanci
+                    caricaDatiGruppo(); 
                 } else {
                     alert("Errore nell'eliminazione della spesa.");
                 }
@@ -106,9 +104,7 @@ function DettaglioGruppo({ gruppoId, onBack }) {
         }
     };
 
-    // --- NUOVA FUNZIONE: ELIMINA AMICO ---
     const handleEliminaAmico = async (amicoId, nomeAmico) => {
-        // Controllo sicurezza: l'amico è coinvolto in spese?
         const eCoinvolto = gruppo.spese.some(s => s.chiPaga_ID === amicoId || s.divisioni?.some(d => d.utente_ID === amicoId));
 
         if (eCoinvolto) {

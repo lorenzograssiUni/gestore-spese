@@ -7,7 +7,6 @@ function HomePage({ refreshKey, onOpenModal, onApriGruppo }) {
 
     useEffect(() => {
         setLoading(true);
-        // Assicurati che 5000 sia la porta giusta del tuo backend!
         fetch('http://localhost:5000/api/gruppo')
             .then(response => response.json())
             .then(data => {
@@ -60,7 +59,6 @@ function HomePage({ refreshKey, onOpenModal, onApriGruppo }) {
                         <GruppoCard
                             key={gruppo.id}
                             gruppo={gruppo}
-                            // Ho corretto qui: la prop che si aspetta GruppoCard ora è "onSeleziona"
                             onSeleziona={() => onApriGruppo(gruppo.id)}
                         />
                     ))}

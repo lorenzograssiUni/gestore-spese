@@ -1,5 +1,4 @@
 function GruppoCard({ gruppo, onSeleziona }) {
-    // Calcolo reale: sommo l'importo di tutte le spese associate al gruppo
     const totaleSpese = gruppo.spese?.reduce((acc, spesa) => acc + spesa.importo, 0) || 0;
     const numeroMembri = gruppo.utenti?.length || 0;
 

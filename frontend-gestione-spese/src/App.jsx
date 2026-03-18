@@ -9,7 +9,6 @@ function App() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
 
-    // Questa variabile tiene traccia del gruppo selezionato (null = siamo nella Home)
     const [gruppoAttivoId, setGruppoAttivoId] = useState(null);
 
     const handleGruppoCreato = () => {

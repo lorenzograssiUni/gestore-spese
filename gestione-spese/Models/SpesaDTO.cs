@@ -14,8 +14,6 @@ namespace gestione_spese.Models
 
         public string? Descrizione { get; set; }
 
-        // Se è null o vuota, dividiamo con TUTTI i membri del gruppo.
-        // Se ha degli ID, dividiamo la spesa SOLO con quegli utenti.
         public List<int> UtentiCoinvoltiIds { get; set; } = new List<int>();
     }
 }

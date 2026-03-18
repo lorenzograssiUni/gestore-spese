@@ -92,7 +92,6 @@ namespace gestione_spese.Controllers.Api
 
             if (riepilogoEsistente != null)
             {
-                // Usa 'Importo' e 'Pagato' come definito nel tuo Model
                 riepilogoEsistente.Importo += riepilogo.Importo;
                 riepilogoEsistente.Pagato = false;
                 _context.Entry(riepilogoEsistente).State = EntityState.Modified;
@@ -117,7 +116,6 @@ namespace gestione_spese.Controllers.Api
                 return NotFound();
             }
 
-            // Usa 'Pagato' e 'Importo' 
             riepilogo.Pagato = true;
             riepilogo.Importo = 0;
 

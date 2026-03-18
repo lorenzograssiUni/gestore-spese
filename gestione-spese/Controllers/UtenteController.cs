@@ -24,7 +24,6 @@ namespace gestione_spese.Controllers.Api
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Utente>>> GetUtenti()
         {
-            // Includo il gruppo di appartenenza per restituire dati più completi
             return await _context.Utenti
                 .Include(u => u.Gruppo)
                 .ToListAsync();
@@ -53,7 +52,6 @@ namespace gestione_spese.Controllers.Api
         [HttpPost]
         public async Task<ActionResult<Utente>> PostUtente([FromBody] Utente utente)
         {
-            // Verifichiamo se il Gruppo associato esiste prima di creare l'utente
             var gruppoEsiste = await _context.Gruppi.AnyAsync(g => g.Id == utente.Gruppo_ID);
             if (!gruppoEsiste)
             {

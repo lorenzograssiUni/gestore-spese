@@ -19,8 +19,6 @@ namespace gestione_spese.Controllers.Api
             _context = context;
         }
 
-        // GET: api/DivisioneSpesa
-        // Recupera tutte le divisioni (utile per debug)
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DivisioneSpesa>>> GetDivisioni()
         {
@@ -30,8 +28,6 @@ namespace gestione_spese.Controllers.Api
                 .ToListAsync();
         }
 
-        // GET: api/DivisioneSpesa/5
-        // Recupera una singola quota tramite il suo ID
         [HttpGet("{id}")]
         public async Task<ActionResult<DivisioneSpesa>> GetDivisioneSpesa(int id)
         {
@@ -48,8 +44,6 @@ namespace gestione_spese.Controllers.Api
             return divisione;
         }
 
-        // GET: api/DivisioneSpesa/Spesa/3
-        // IMPORTANTE: Recupera tutte le quote associate a una specifica spesa
         [HttpGet("Spesa/{spesaId}")]
         public async Task<ActionResult<IEnumerable<DivisioneSpesa>>> GetDivisioniPerSpesa(int spesaId)
         {
@@ -66,12 +60,9 @@ namespace gestione_spese.Controllers.Api
             return divisioni;
         }
 
-        // POST: api/DivisioneSpesa
-        // Inserisce una nuova quota (es: Mario deve 15 euro per la Spesa ID 3)
         [HttpPost]
         public async Task<ActionResult<DivisioneSpesa>> PostDivisioneSpesa([FromBody] DivisioneSpesa divisioneSpesa)
         {
-            // Verifiche di integrità
             var spesaEsiste = await _context.Spese.AnyAsync(s => s.Id == divisioneSpesa.Spesa_ID);
             var utenteEsiste = await _context.Utenti.AnyAsync(u => u.Id == divisioneSpesa.Utente_ID);
 
@@ -84,7 +75,6 @@ namespace gestione_spese.Controllers.Api
                 return BadRequest("L'Utente specificato non esiste.");
             }
 
-            // Evita che un utente abbia due quote separate per la stessa spesa
             var quotaGiaEsistente = await _context.Divisioni
                 .AnyAsync(d => d.Spesa_ID == divisioneSpesa.Spesa_ID && d.Utente_ID == divisioneSpesa.Utente_ID);
 
@@ -99,8 +89,6 @@ namespace gestione_spese.Controllers.Api
             return CreatedAtAction(nameof(GetDivisioneSpesa), new { id = divisioneSpesa.Id }, divisioneSpesa);
         }
 
-        // PUT: api/DivisioneSpesa/5
-        // Aggiorna l'importo di una quota
         [HttpPut("{id}")]
         public async Task<IActionResult> PutDivisioneSpesa(int id, [FromBody] DivisioneSpesa divisioneSpesa)
         {
@@ -130,7 +118,6 @@ namespace gestione_spese.Controllers.Api
             return NoContent();
         }
 
-        // DELETE: api/DivisioneSpesa/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDivisioneSpesa(int id)
         {
