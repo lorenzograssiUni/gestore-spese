@@ -15,7 +15,7 @@ function ModalNuovoGruppo({ onClose, onGruppoCreato }) {
             descrizione: descrizione
         };
 
-        fetch('http://localhost:5000/api/gruppo', { 
+        fetch('http://lhttps://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/api/gruppo', { 
             method: 'POST',
             headers: {
                 'Accept': 'application/json',

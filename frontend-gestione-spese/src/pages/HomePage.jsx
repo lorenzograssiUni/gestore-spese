@@ -7,7 +7,7 @@ function HomePage({ refreshKey, onOpenModal, onApriGruppo }) {
 
     useEffect(() => {
         setLoading(true);
-        fetch('http://localhost:5000/api/gruppo')
+        fetch('https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/api/gruppo')
             .then(response => response.json())
             .then(data => {
                 setGruppi(data);

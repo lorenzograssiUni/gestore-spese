@@ -11,7 +11,7 @@ function DettaglioGruppo({ gruppoId, onBack }) {
     const [isModalSpesaOpen, setIsModalSpesaOpen] = useState(false);
 
     const caricaDatiGruppo = () => {
-        fetch(`http://localhost:5000/api/gruppo/${gruppoId}`)
+        fetch(`https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/api/gruppo/${gruppoId}`)
             .then(response => response.json())
             .then(data => {
                 setGruppo(data);
@@ -20,7 +20,7 @@ function DettaglioGruppo({ gruppoId, onBack }) {
                 console.error("Errore caricamento gruppo:", error);
             });
 
-        fetch(`http://localhost:5000/api/gruppo/${gruppoId}/bilanci`)
+        fetch(`https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/api/gruppo/${gruppoId}/bilanci`)
             .then(response => response.json())
             .then(data => {
                 setRiepiloghi(data);
@@ -49,7 +49,7 @@ function DettaglioGruppo({ gruppoId, onBack }) {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/utente', {
+            const response = await fetch('https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/api/utente', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ function DettaglioGruppo({ gruppoId, onBack }) {
         const conferma = window.confirm("Sei sicuro di voler eliminare questo gruppo? Tutte le spese andranno perse in modo irreversibile.");
         if (conferma) {
             try {
-                const response = await fetch(`http://localhost:5000/api/gruppo/${gruppoId}`, {
+                const response = await fetch(`https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/api/gruppo/${gruppoId}`, {
                     method: 'DELETE',
                 });
                 if (response.ok) {
@@ -90,7 +90,7 @@ function DettaglioGruppo({ gruppoId, onBack }) {
         const conferma = window.confirm("Sei sicuro di voler eliminare questa spesa?");
         if (conferma) {
             try {
-                const response = await fetch(`http://localhost:5000/api/spesa/${spesaId}`, {
+                const response = await fetch(`https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/api/spesa/${spesaId}`, {
                     method: 'DELETE',
                 });
                 if (response.ok) {
@@ -115,7 +115,7 @@ function DettaglioGruppo({ gruppoId, onBack }) {
         const conferma = window.confirm(`Vuoi rimuovere ${nomeAmico} dal gruppo?`);
         if (conferma) {
             try {
-                const response = await fetch(`http://localhost:5000/api/utente/${amicoId}`, {
+                const response = await fetch(`https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/api/utente/${amicoId}`, {
                     method: 'DELETE',
                 });
                 if (response.ok) {

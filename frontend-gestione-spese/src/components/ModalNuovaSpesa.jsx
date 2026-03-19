@@ -41,7 +41,7 @@ function ModalNuovaSpesa({ onClose, onSpesaAggiunta, gruppoId, membri }) {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/spesa', {
+            const response = await fetch('`https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/api/spesa', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
