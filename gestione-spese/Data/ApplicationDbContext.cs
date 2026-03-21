@@ -23,10 +23,9 @@ namespace gestione_spese.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Utente>()
-                .HasOne(u => u.Gruppo)
+                .HasMany(u => u.Gruppi)
                 .WithMany(g => g.Utenti)
-                .HasForeignKey(u => u.Gruppo_ID)
-                .OnDelete(DeleteBehavior.Cascade); 
+                .UsingEntity(j => j.ToTable("UtenteGruppo"));
 
             modelBuilder.Entity<Spesa>()
                 .HasOne(s => s.Gruppo)

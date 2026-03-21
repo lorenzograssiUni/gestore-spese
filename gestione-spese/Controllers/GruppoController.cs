@@ -46,13 +46,25 @@ namespace gestione_spese.Controllers.Api
         }
 
         [HttpPost]
-        public async Task<ActionResult<Gruppo>> PostGruppo([FromBody] Gruppo gruppo)
+        public async Task<ActionResult<Gruppo>> PostGruppo([FromBody] Gruppo nuovoGruppo, [FromQuery] int creatoreId)
         {
-            _context.Gruppi.Add(gruppo);
+            var utente = await _context.Utenti.FindAsync(creatoreId);
+            if (utente == null) return BadRequest("Utente non trovato");
+
+            if (string.IsNullOrEmpty(nuovoGruppo.CodiceInvito))
+            {
+                nuovoGruppo.CodiceInvito = Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
+            }
+
+            _context.Gruppi.Add(nuovoGruppo);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetGruppo), new { id = gruppo.Id }, gruppo);
+            nuovoGruppo.Utenti.Add(utente);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetGruppo), new { id = nuovoGruppo.Id }, nuovoGruppo);
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutGruppo(int id, [FromBody] Gruppo gruppo)
@@ -87,44 +99,61 @@ namespace gestione_spese.Controllers.Api
         public async Task<IActionResult> DeleteGruppo(int id)
         {
             var gruppo = await _context.Gruppi
-                .Include(g => g.Utenti)
                 .Include(g => g.Spese)
                     .ThenInclude(s => s.Divisioni)
                 .FirstOrDefaultAsync(g => g.Id == id);
 
-            if (gruppo == null)
-            {
-                return NotFound();
-            }
+            if (gruppo == null) return NotFound();
 
             foreach (var spesa in gruppo.Spese)
             {
                 _context.Divisioni.RemoveRange(spesa.Divisioni);
             }
-
             _context.Spese.RemoveRange(gruppo.Spese);
 
-            _context.Utenti.RemoveRange(gruppo.Utenti);
 
             _context.Gruppi.Remove(gruppo);
-
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
+        [HttpDelete("{id}/rimuovi-membro/{utenteId}")]
+        public async Task<IActionResult> RimuoviMembro(int id, int utenteId)
+        {
+            var gruppo = await _context.Gruppi.Include(g => g.Utenti).FirstOrDefaultAsync(g => g.Id == id);
+            if (gruppo == null) return NotFound("Gruppo non trovato");
+
+            var utente = gruppo.Utenti.FirstOrDefault(u => u.Id == utenteId);
+            if (utente != null)
+            {
+                gruppo.Utenti.Remove(utente); 
+                await _context.SaveChangesAsync();
+            }
+            return NoContent();
+        }
+
+
         private bool GruppoExists(int id)
         {
             return _context.Gruppi.Any(e => e.Id == id);
         }
-
+        [HttpGet("miei-gruppi/{utenteId}")]
+        public async Task<ActionResult<IEnumerable<Gruppo>>> GetMieiGruppi(int utenteId)
+        {
+            return await _context.Gruppi
+                .Include(g => g.Utenti)
+                .Include(g => g.Spese)
+                .Where(g => g.Utenti.Any(u => u.Id == utenteId))
+                .ToListAsync();
+        }
         [HttpGet("{id}/Bilanci")]
         public async Task<ActionResult<IEnumerable<object>>> GetBilanciGruppo(int id)
         {
             var gruppoEsiste = await _context.Gruppi.AnyAsync(g => g.Id == id);
             if (!gruppoEsiste) return NotFound("Gruppo non trovato");
 
-            var utenti = await _context.Utenti.Where(u => u.Gruppo_ID == id).ToListAsync();
+            var utenti = await _context.Utenti.Where(u => u.Gruppi.Any(g => g.Id == id)).ToListAsync();
 
             var saldi = new Dictionary<int, decimal>();
             foreach (var u in utenti) saldi[u.Id] = 0;
@@ -181,5 +210,52 @@ namespace gestione_spese.Controllers.Api
 
             return Ok(riepiloghi);
         }
+        // POST: api/Gruppo/join?codice=XYZ&utenteId=1
+        [HttpPost("join")]
+        public async Task<IActionResult> JoinGruppo([FromQuery] string codice, [FromQuery] int utenteId)
+        {
+            if (string.IsNullOrWhiteSpace(codice))
+                return BadRequest("Il codice di invito è obbligatorio.");
+
+            var gruppo = await _context.Gruppi
+                .Include(g => g.Utenti)
+                .FirstOrDefaultAsync(g => g.CodiceInvito.ToLower() == codice.ToLower());
+
+            if (gruppo == null)
+                return NotFound("Nessun gruppo trovato con questo codice.");
+
+            var utente = await _context.Utenti.FindAsync(utenteId);
+            if (utente == null)
+                return NotFound("Utente non trovato.");
+
+            if (gruppo.Utenti.Any(u => u.Id == utenteId))
+                return BadRequest("Sei già membro di questo gruppo.");
+
+            gruppo.Utenti.Add(utente);
+            await _context.SaveChangesAsync();
+
+            return Ok(gruppo);
+        }
+        [HttpPost("{id}/aggiungi-bot")]
+        public async Task<IActionResult> AggiungiBotAlGruppo(int id, [FromBody] Utente botUser)
+        {
+            var gruppo = await _context.Gruppi
+                .Include(g => g.Utenti)
+                .FirstOrDefaultAsync(g => g.Id == id);
+
+            if (gruppo == null)
+                return NotFound("Gruppo non trovato");
+
+ì            if (string.IsNullOrWhiteSpace(botUser.Email))
+            {
+                botUser.Email = $"bot_{Guid.NewGuid().ToString().Substring(0, 6)}@bot.local";
+            }
+
+            gruppo.Utenti.Add(botUser);
+            await _context.SaveChangesAsync();
+
+            return Ok(botUser);
+        }
+
     }
 }

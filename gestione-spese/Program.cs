@@ -3,6 +3,7 @@ using gestione_spese.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Forza la visualizzazione degli errori dettagliati anche in produzione
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(options =>
     {
@@ -11,15 +12,21 @@ builder.Services.AddControllersWithViews()
 
 builder.Services.AddHttpClient();
 
+// === MODIFICA CHIAVE PER SQLITE SU AZURE ===
+// Usa una cartella dove Azure garantisce i permessi di lettura/scrittura
+var dbFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+var dbPath = Path.Combine(dbFolder, "gestionespese.db");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite($"Data Source={dbPath}"));
+// ==========================================
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
@@ -28,39 +35,34 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-using (var scope = app.Services.CreateScope())
+
+// Mostra la pagina di errore dettagliata se qualcosa va storto
+app.UseDeveloperExceptionPage();
+
+// Migrazione automatica del Database all'avvio
+try
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    context.Database.Migrate(); 
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
+    }
 }
-
-if (!app.Environment.IsDevelopment())
+catch (Exception ex)
 {
-    app.UseExceptionHandler("/Home/Error");
-
-    app.UseHsts();
+    Console.WriteLine($"Errore durante la migrazione del DB: {ex.Message}");
+    // Se fallisce, logghiamo ma lasciamo partire l'app per mostrare l'errore in Swagger
 }
 
 app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gestione Spese API v1");
-});
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gestione Spese API v1"));
 
-app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseCors("AllowReactApp");
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
-
-app.MapStaticAssets();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
 
 app.MapControllers();
 

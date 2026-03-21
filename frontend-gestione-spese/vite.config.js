@@ -7,4 +7,8 @@ export default defineConfig({
         react(),
         tailwindcss(), // <--- E aggiungi questo
     ],
+    resolve: {
+        // Questo forza Vite a usare sempre la stessa istanza di React
+        dedupe: ['react', 'react-dom', 'react-router-dom'],
+    },
 })

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace gestione_spese.Migrations
 {
     /// <inheritdoc />
-    public partial class CreazioneIniziale : Migration
+    public partial class MigrazioneDefinitiva : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,8 @@ namespace gestione_spese.Migrations
                     Nome = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Descrizione = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     DataCreazione = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Attivo = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Attivo = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CodiceInvito = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -34,19 +35,12 @@ namespace gestione_spese.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Nome = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", nullable: true),
-                    Gruppo_ID = table.Column<int>(type: "INTEGER", nullable: false),
+                    Email = table.Column<string>(type: "TEXT", nullable: false),
                     DataIscrizione = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Utenti", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Utenti_Gruppi_Gruppo_ID",
-                        column: x => x.Gruppo_ID,
-                        principalTable: "Gruppi",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -116,6 +110,30 @@ namespace gestione_spese.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UtenteGruppo",
+                columns: table => new
+                {
+                    GruppiId = table.Column<int>(type: "INTEGER", nullable: false),
+                    UtentiId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UtenteGruppo", x => new { x.GruppiId, x.UtentiId });
+                    table.ForeignKey(
+                        name: "FK_UtenteGruppo_Gruppi_GruppiId",
+                        column: x => x.GruppiId,
+                        principalTable: "Gruppi",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UtenteGruppo_Utenti_UtentiId",
+                        column: x => x.UtentiId,
+                        principalTable: "Utenti",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Divisioni",
                 columns: table => new
                 {
@@ -178,9 +196,9 @@ namespace gestione_spese.Migrations
                 column: "Gruppo_ID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Utenti_Gruppo_ID",
-                table: "Utenti",
-                column: "Gruppo_ID");
+                name: "IX_UtenteGruppo_UtentiId",
+                table: "UtenteGruppo",
+                column: "UtentiId");
         }
 
         /// <inheritdoc />
@@ -193,13 +211,16 @@ namespace gestione_spese.Migrations
                 name: "Riepiloghi");
 
             migrationBuilder.DropTable(
+                name: "UtenteGruppo");
+
+            migrationBuilder.DropTable(
                 name: "Spese");
 
             migrationBuilder.DropTable(
-                name: "Utenti");
+                name: "Gruppi");
 
             migrationBuilder.DropTable(
-                name: "Gruppi");
+                name: "Utenti");
         }
     }
 }

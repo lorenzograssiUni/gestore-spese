@@ -5,10 +5,10 @@ function GruppoCard({ gruppo, onSeleziona }) {
     return (
         <div
             onClick={() => onSeleziona(gruppo.id)}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all cursor-pointer group"
+            className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all cursor-pointer group relative"
         >
             <div className="flex justify-between items-start mb-4">
-                <div>
+                <div className="pr-4">
                     <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                         {gruppo.nome}
                     </h3>
@@ -16,10 +16,15 @@ function GruppoCard({ gruppo, onSeleziona }) {
                         {gruppo.descrizione}
                     </p>
                 </div>
-                <div className="w-12 h-12 bg-blue-50 rounded-full flex justify-center items-center group-hover:bg-blue-100 transition-colors">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+
+                <div
+                    className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm flex flex-col items-center justify-center min-w-[80px] transition-transform group-hover:scale-105"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                    }}
+                >
+                    <span className="text-[10px] font-black uppercase text-indigo-400 mb-0.5 tracking-wider">Codice</span>
+                    <span className="text-sm font-mono font-bold tracking-widest">{gruppo.codiceInvito}</span>
                 </div>
             </div>
 

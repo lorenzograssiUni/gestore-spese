@@ -25,7 +25,7 @@ namespace gestione_spese.Controllers.Api
         public async Task<ActionResult<IEnumerable<Utente>>> GetUtenti()
         {
             return await _context.Utenti
-                .Include(u => u.Gruppo)
+                .Include(u => u.Gruppi) // CAMBIATO DA Gruppo A Gruppi
                 .ToListAsync();
         }
 
@@ -35,7 +35,7 @@ namespace gestione_spese.Controllers.Api
         public async Task<ActionResult<Utente>> GetUtente(int id)
         {
             var utente = await _context.Utenti
-                .Include(u => u.Gruppo)
+                .Include(u => u.Gruppi) // CAMBIATO DA Gruppo A Gruppi
                 .Include(u => u.SpesePagate)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
@@ -52,12 +52,7 @@ namespace gestione_spese.Controllers.Api
         [HttpPost]
         public async Task<ActionResult<Utente>> PostUtente([FromBody] Utente utente)
         {
-            var gruppoEsiste = await _context.Gruppi.AnyAsync(g => g.Id == utente.Gruppo_ID);
-            if (!gruppoEsiste)
-            {
-                return BadRequest("Impossibile creare l'utente: il Gruppo specificato non esiste. Crea prima il Gruppo.");
-            }
-
+            // RIMOSSO IL CONTROLLO SU GRUPPO_ID PERCHÈ ORA L'UTENTE SI UNISCE AI GRUPPI SUCCESSIVAMENTE
             _context.Utenti.Add(utente);
             await _context.SaveChangesAsync();
 
@@ -112,10 +107,61 @@ namespace gestione_spese.Controllers.Api
             return NoContent();
         }
 
-        // Metodo privato di supporto
         private bool UtenteExists(int id)
         {
             return _context.Utenti.Any(e => e.Id == id);
         }
+
+        public class LoginRequest
+        {
+            public string Email { get; set; }
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<Utente>> Login([FromBody] LoginRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest("L'email è obbligatoria");
+
+            var utente = await _context.Utenti
+                .Include(u => u.Gruppi)
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
+
+            if (utente == null)
+            {
+                utente = new Utente
+                {
+                    Email = request.Email,
+                    Nome = request.Email.Split('@')[0] 
+                };
+
+                _context.Utenti.Add(utente);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(utente);
+        }
+        public class UpdateNomeRequest
+        {
+            public string NuovoNome { get; set; }
+        }
+
+        // PUT: api/Utente/5/nome
+        [HttpPut("{id}/nome")]
+        public async Task<IActionResult> AggiornaNome(int id, [FromBody] UpdateNomeRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.NuovoNome))
+                return BadRequest("Il nome non può essere vuoto.");
+
+            var utente = await _context.Utenti.FindAsync(id);
+            if (utente == null)
+                return NotFound("Utente non trovato.");
+
+            utente.Nome = request.NuovoNome;
+            await _context.SaveChangesAsync();
+
+            return Ok(utente);
+        }
+
     }
 }

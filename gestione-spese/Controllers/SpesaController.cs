@@ -50,7 +50,6 @@ namespace gestione_spese.Controllers.Api
         }
 
         // GET: api/Spesa/Gruppo/2
-        // Metodo custom molto utile: Recupera tutte le spese di uno specifico gruppo
         [HttpGet("Gruppo/{gruppoId}")]
         public async Task<ActionResult<IEnumerable<Spesa>>> GetSpesePerGruppo(int gruppoId)
         {
@@ -125,7 +124,6 @@ namespace gestione_spese.Controllers.Api
         }
 
         // PUT: api/Spesa/5
-        // Modifica una spesa esistente (es. correggi importo o descrizione)
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSpesa(int id, [FromBody] Spesa spesa)
         {
@@ -156,7 +154,6 @@ namespace gestione_spese.Controllers.Api
         }
 
         // DELETE: api/Spesa/5
-        // Cancella una spesa
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSpesa(int id)
         {

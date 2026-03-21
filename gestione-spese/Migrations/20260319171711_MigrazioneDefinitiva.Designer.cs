@@ -11,14 +11,29 @@ using gestione_spese.Data;
 namespace gestione_spese.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260317150702_CreazioneIniziale")]
-    partial class CreazioneIniziale
+    [Migration("20260319171711_MigrazioneDefinitiva")]
+    partial class MigrazioneDefinitiva
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
+
+            modelBuilder.Entity("GruppoUtente", b =>
+                {
+                    b.Property<int>("GruppiId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UtentiId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("GruppiId", "UtentiId");
+
+                    b.HasIndex("UtentiId");
+
+                    b.ToTable("UtenteGruppo", (string)null);
+                });
 
             modelBuilder.Entity("gestione_spese.Models.DivisioneSpesa", b =>
                 {
@@ -52,6 +67,11 @@ namespace gestione_spese.Migrations
 
                     b.Property<bool>("Attivo")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("CodiceInvito")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DataCreazione")
                         .HasColumnType("TEXT");
@@ -150,10 +170,8 @@ namespace gestione_spese.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Gruppo_ID")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -162,9 +180,22 @@ namespace gestione_spese.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Gruppo_ID");
-
                     b.ToTable("Utenti");
+                });
+
+            modelBuilder.Entity("GruppoUtente", b =>
+                {
+                    b.HasOne("gestione_spese.Models.Gruppo", null)
+                        .WithMany()
+                        .HasForeignKey("GruppiId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("gestione_spese.Models.Utente", null)
+                        .WithMany()
+                        .HasForeignKey("UtentiId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("gestione_spese.Models.DivisioneSpesa", b =>
@@ -232,24 +263,11 @@ namespace gestione_spese.Migrations
                     b.Navigation("UtenteChePaga");
                 });
 
-            modelBuilder.Entity("gestione_spese.Models.Utente", b =>
-                {
-                    b.HasOne("gestione_spese.Models.Gruppo", "Gruppo")
-                        .WithMany("Utenti")
-                        .HasForeignKey("Gruppo_ID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Gruppo");
-                });
-
             modelBuilder.Entity("gestione_spese.Models.Gruppo", b =>
                 {
                     b.Navigation("Riepiloghetti");
 
                     b.Navigation("Spese");
-
-                    b.Navigation("Utenti");
                 });
 
             modelBuilder.Entity("gestione_spese.Models.Spesa", b =>

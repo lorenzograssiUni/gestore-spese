@@ -6,7 +6,7 @@ modificando il file MSBuild. Per altre informazioni su questo argomento, vedere 
 <Project>
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
-    <History>True|2026-03-19T00:00:34.9464865Z||;</History>
+    <History>True|2026-03-21T21:27:23.9172875Z||;True|2026-03-21T22:24:21.3709513+01:00||;True|2026-03-21T22:18:26.5718815+01:00||;True|2026-03-19T01:00:34.9464865+01:00||;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>
