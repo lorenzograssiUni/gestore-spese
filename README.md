@@ -1,17 +1,31 @@
+# 💲 Split Mate - Gestore Spese di Gruppo
+
 Una Web Application full-stack per la gestione e la divisione delle spese in gruppo, ideale per coinquilini, viaggi e cene tra amici.
 
-##  Funzionalità Principali
+---
 
-* **Gestione Gruppi:** Creazione, modifica ed eliminazione di gruppi di spesa.
-* **Gestione Membri:** Aggiunta di utenti all'interno di un gruppo specifico.
-* **Gestione Spese:** Inserimento di nuove spese specificando chi ha pagato e l'importo.
+## 🚀 Demo Live
+
+Il frontend è disponibile online su Vercel:
+👉 [gestore-spese.vercel.app](https://gestore-spese.vercel.app)
+
+---
+
+## ✅ Funzionalità Principali
+
+* **Login / Registrazione:** Accesso tramite email. Se l'utente non esiste viene registrato automaticamente, altrimenti viene riconosciuto e loggato.
+* **Modifica Nome Utente:** Dalla Navbar è possibile cliccare sul proprio nome per modificarlo in tempo reale, senza bisogno di ricaricare la pagina.
+* **Gestione Gruppi:** Creazione, visualizzazione ed eliminazione di gruppi di spesa.
+* **Codice Invito:** Ogni gruppo ha un codice univoco generato automaticamente. Chiunque può unirsi a un gruppo inserendo il codice invito dalla schermata principale.
+* **Gestione Membri:** Aggiunta di utenti fittizi (bot) all'interno di un gruppo specifico e rimozione degli stessi (solo se non hanno spese registrate).
+* **Gestione Spese:** Inserimento di nuove spese specificando chi ha pagato e l'importo. Possibilità di eliminare singole spese.
 * **Divisione Flessibile:** Possibilità di dividere la spesa equamente tra tutti i membri o solo tra alcuni membri selezionati.
 * **Calcolo Bilanci in Tempo Reale:** L'algoritmo calcola istantaneamente chi deve rimborsare chi (e quanto) per pareggiare i conti del gruppo, minimizzando il numero di transazioni.
 * **Eliminazione a cascata:** Cancellazione sicura delle singole spese, dei membri e dei gruppi.
 
 ---
 
-##  Stack Tecnologico
+## 🛠️ Stack Tecnologico
 
 Il progetto è strutturato in due parti (Frontend e Backend) all'interno di un unico monorepo:
 
@@ -25,10 +39,11 @@ Il progetto è strutturato in due parti (Frontend e Backend) all'interno di un u
 * **Libreria Core:** React
 * **Build Tool:** Vite
 * **Styling:** Tailwind CSS
+* **Routing:** React Router DOM
 
 ---
 
-##  Come avviare il progetto in locale
+## 💻 Come avviare il progetto in locale
 
 Segui questi passaggi per scaricare e far girare l'applicazione sul tuo computer.
 
@@ -41,46 +56,51 @@ Segui questi passaggi per scaricare e far girare l'applicazione sul tuo computer
 ```bash
 git clone https://github.com/lorenzograssiUni/gestore-spese.git
 cd gestore-spese
-```
 
 ### Passaggio 2: Avviare il Backend (C# / .NET)
 Il backend utilizza SQLite. Le tabelle del database verranno generate automaticamente al primo avvio grazie alla migrazione configurata in fase di startup.
 
 1. Apri un terminale e spostati nella cartella del backend:
-   ```bash
-   cd gestione-spese
-   ```
+```bash
+cd gestione-spese
+```
 2. Avvia l'API:
-   ```bash
-   dotnet run
-   ```
-L'API sarà in ascolto all'indirizzo `http://localhost:5000` (o porte adiacenti). 
+```bash
+dotnet run
+```
+L'API sarà in ascolto all'indirizzo `http://localhost:5207/api\`.
 Navigando su `/swagger` sarà possibile visualizzare l'interfaccia interattiva e la documentazione degli endpoint.
 
-### Passaggio 3: Avviare il Frontend (React)
-1. Apri un **nuovo** terminale (lasciando in esecuzione quello del backend) e spostati nella cartella del frontend:
-   ```bash
-   cd frontend-gestione-spese
-   ```
-2. Installa le dipendenze npm:
-   ```bash
-   npm install --legacy-peer-deps
-   ```
-3. Avvia il server di sviluppo:
-   ```bash
-   npm run dev
-   ```
+### Passaggio 3: Configurare le variabili d'ambiente del Frontend
+Nella cartella `frontend-gestione-spese`, crea un file `.env` con il seguente contenuto:
+```
+VITE_API_URL=http://localhost:5207/api
+```
 
-### Passaggio 4: Utilizzare l'App
-Apri il tuo browser preferito e vai all'indirizzo indicato dal terminale di Vite (solitamente **`http://localhost:5173`**).
+### Passaggio 4: Avviare il Frontend (React)
+1. Apri un **nuovo** terminale e spostati nella cartella del frontend:
+```bash
+cd frontend-gestione-spese
+```
+2. Installa le dipendenze npm:
+```bash
+npm install
+```
+3. Avvia il server di sviluppo:
+```bash
+npm run dev
+```
+
+### Passaggio 5: Utilizzare l'App
+Apri il tuo browser preferito e vai all'indirizzo indicato dal terminale di Vite (solitamente **`http://localhost:5173\`\*\*).
 
 ---
 
-##  Struttura del Database e del Progetto
+## 🗄️ Struttura del Database e del Progetto
 
 Il database relazionale contiene le seguenti entità principali:
-* `Gruppi`: Contiene le informazioni generali dei gruppi (Nome, Descrizione).
-* `Utenti`: Partecipanti associati a uno specifico gruppo (Relazione 1:N con Gruppi).
+* `Gruppi`: Contiene le informazioni generali dei gruppi (Nome, Descrizione, CodiceInvito).
+* `Utenti`: Partecipanti associati a uno specifico gruppo (Relazione N:M con Gruppi).
 * `Spese`: Registra l'importo totale, la descrizione e l'ID di chi ha pagato (`ChiPaga_ID`) (Relazione 1:N con Gruppi).
 * `DivisioniSpesa`: Tabella di appoggio che registra la quota esatta dovuta da ogni specifico utente per ogni specifica spesa (Relazione 1:N con Spese e Utenti). L'eliminazione avviene a cascata.
 
@@ -90,20 +110,25 @@ Il database relazionale contiene le seguenti entità principali:
 
 ---
 
-##  API e Logica di Calcolo
+## 📡 API e Logica di Calcolo
 
 Il backend espone un'architettura **RESTful** divisa per Controller (`GruppoController`, `SpesaController`, `UtenteController`, ecc.).
 Tra le logiche di business più interessanti c'è l'**algoritmo di pareggio dei debiti** (gestito dal `RiepilogoController`), che elabora i saldi positivi e negativi di ogni utente e restituisce le transazioni ottimali per saldare tutti i conti del gruppo con il minor numero di passaggi possibili.
 
 ---
 
-##  Sviluppi Futuri (Roadmap)
-- Implementazione del sistema di Autenticazione e Login.
-- Storico delle transazioni e dei pagamenti completati.
-- Ottimizzazione del design pattern (es. integrazione del *Visitor pattern* per alcune logiche di esportazione dati).
-- Deployment su servizi cloud.
+## 🗺️ Roadmap
+
+- 
+Storico delle transazioni e dei pagamenti completati.
+- 
+Notifiche per i rimborsi pendenti.
+- 
+Ottimizzazione del design pattern (es. integrazione del *Visitor pattern* per alcune logiche di esportazione dati).
+- 
+App mobile (React Native).
 
 ---
 
-##  Autori
-Sviluppato da **Mattia Negri**,**Lorenzo Grassi**,**Erica Paolasini**,**Simranjit Kaur**  come progetto pratico di web development full-stack.
+## 👥 Autori
+Sviluppato da **Mattia Negri**, **Lorenzo Grassi**, **Erica Paolasini**, **Simranjit Kaur** come progetto pratico di web development full-stack.
