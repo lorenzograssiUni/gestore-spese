@@ -56,6 +56,7 @@ Segui questi passaggi per scaricare e far girare l'applicazione sul tuo computer
 ```bash
 git clone https://github.com/lorenzograssiUni/gestore-spese.git
 cd gestore-spese
+```
 
 ### Passaggio 2: Avviare il Backend (C# / .NET)
 Il backend utilizza SQLite. Le tabelle del database verranno generate automaticamente al primo avvio grazie alla migrazione configurata in fase di startup.
@@ -119,14 +120,10 @@ Tra le logiche di business più interessanti c'è l'**algoritmo di pareggio dei 
 
 ## 🗺️ Roadmap
 
-- 
-Storico delle transazioni e dei pagamenti completati.
-- 
-Notifiche per i rimborsi pendenti.
-- 
-Ottimizzazione del design pattern (es. integrazione del *Visitor pattern* per alcune logiche di esportazione dati).
-- 
-App mobile (React Native).
+* Storico delle transazioni e dei pagamenti completati.
+* Notifiche per i rimborsi pendenti.
+* Ottimizzazione del design pattern (es. integrazione del *Visitor pattern* per alcune logiche di esportazione dati).
+* App mobile (React Native).
 
 ---
 
