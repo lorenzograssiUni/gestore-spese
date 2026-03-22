@@ -6,8 +6,10 @@ Una Web Application full-stack per la gestione e la divisione delle spese in gru
 
 ## 🚀 Demo Live
 
-Il frontend è disponibile online su Vercel:
-👉 [gestore-spese.vercel.app](https://gestore-spese.vercel.app)
+| Componente | URL | Hosting |
+|---|---|---|
+| 🖥️ Frontend | [gestore-spese-xi.vercel.app](https://gestore-spese-xi.vercel.app) | Vercel |
+| ⚙️ Backend API | [gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net](https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net) | Azure App Service |
 
 ---
 
@@ -29,71 +31,34 @@ Il frontend è disponibile online su Vercel:
 
 Il progetto è strutturato in due parti (Frontend e Backend) all'interno di un unico monorepo:
 
-### Backend (C# / .NET)
+### Backend (C# / .NET) — Deploy su Azure App Service
 * **Framework:** ASP.NET Core Web API
+* **Runtime:** .NET 10.0
 * **ORM:** Entity Framework Core
-* **Database:** SQLite (scelto per portabilità e semplicità di test in locale)
+* **Database:** SQLite
 * **Architettura:** RESTful API
+* **Hosting:** Azure App Service (Free F1, Sweden Central)
 
-### Frontend (React / Vite)
+### Frontend (React / Vite) — Deploy su Vercel
 * **Libreria Core:** React
 * **Build Tool:** Vite
 * **Styling:** Tailwind CSS
 * **Routing:** React Router DOM
+* **Hosting:** Vercel
 
 ---
 
-## 💻 Come avviare il progetto in locale
+## 🌐 Utilizzo dell'App
 
-Segui questi passaggi per scaricare e far girare l'applicazione sul tuo computer.
+L'applicazione è già deployata e pronta all'uso, senza necessità di installare nulla.
 
-### Prerequisiti
-* [Node.js e npm](https://nodejs.org/) installati sul PC.
-* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (o versioni compatibili) installato sul PC.
-* Un IDE come Visual Studio o Visual Studio Code.
+1. Apri il browser e vai su 👉 [gestore-spese-xi.vercel.app](https://gestore-spese-xi.vercel.app)
+2. Inserisci la tua email per accedere o registrarti automaticamente.
+3. Crea un nuovo gruppo oppure unisciti a uno esistente tramite codice invito.
+4. Aggiungi spese, seleziona chi ha pagato e scegli come dividere il costo.
+5. Consulta il riepilogo per sapere chi deve rimborsare chi.
 
-### Passaggio 1: Clonare la Repository
-```bash
-git clone https://github.com/lorenzograssiUni/gestore-spese.git
-cd gestore-spese
-```
-
-### Passaggio 2: Avviare il Backend (C# / .NET)
-Il backend utilizza SQLite. Le tabelle del database verranno generate automaticamente al primo avvio grazie alla migrazione configurata in fase di startup.
-
-1. Apri un terminale e spostati nella cartella del backend:
-```bash
-cd gestione-spese
-```
-2. Avvia l'API:
-```bash
-dotnet run
-```
-L'API sarà in ascolto all'indirizzo `http://localhost:5207/api\`.
-Navigando su `/swagger` sarà possibile visualizzare l'interfaccia interattiva e la documentazione degli endpoint.
-
-### Passaggio 3: Configurare le variabili d'ambiente del Frontend
-Nella cartella `frontend-gestione-spese`, crea un file `.env` con il seguente contenuto:
-```
-VITE_API_URL=http://localhost:5207/api
-```
-
-### Passaggio 4: Avviare il Frontend (React)
-1. Apri un **nuovo** terminale e spostati nella cartella del frontend:
-```bash
-cd frontend-gestione-spese
-```
-2. Installa le dipendenze npm:
-```bash
-npm install
-```
-3. Avvia il server di sviluppo:
-```bash
-npm run dev
-```
-
-### Passaggio 5: Utilizzare l'App
-Apri il tuo browser preferito e vai all'indirizzo indicato dal terminale di Vite (solitamente **`http://localhost:5173\`\*\*).
+> ℹ️ Il frontend comunica automaticamente con il backend ospitato su Azure. Non è necessaria alcuna configurazione aggiuntiva.
 
 ---
 
