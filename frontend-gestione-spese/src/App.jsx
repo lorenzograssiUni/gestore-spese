@@ -5,7 +5,7 @@ import Navbar from './Navbar.jsx';
 import ModalNuovoGruppo from './ModalNuovoGruppo.jsx';
 import './index.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5207/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5097/api';
 
 function App() {
     const [utente, setUtente] = useState(() => {
@@ -17,6 +17,8 @@ function App() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [gruppoAttivoId, setGruppoAttivoId] = useState(null);
     const [emailInput, setEmailInput] = useState('');
+    const [passwordInput, setPasswordInput] = useState(''); // NUOVO
+    const [erroreLogin, setErroreLogin] = useState('');     // NUOVO: per mostrare errori
 
     const handleLogout = () => {
         localStorage.removeItem('utente_spese');
@@ -32,24 +34,29 @@ function App() {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        if (!emailInput) return;
+        if (!emailInput || !passwordInput) return;
+        setErroreLogin(''); // resetta errore precedente
 
         try {
-            const response = await fetch(`${API_BASE_URL}/Utente/login`, {
+            const response = await fetch(`${API_BASE_URL}/Auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: emailInput })
+                body: JSON.stringify({ email: emailInput, password: passwordInput }) // MODIFICATO
             });
 
             if (response.ok) {
                 const user = await response.json();
                 setUtente(user);
                 localStorage.setItem('utente_spese', JSON.stringify(user));
+            } else if (response.status === 401) {
+                // 401 Unauthorized = password errata
+                setErroreLogin('Password errata. Riprova.');
             } else {
-                alert("Errore durante il login");
+                setErroreLogin('Errore durante il login. Riprova.');
             }
         } catch (error) {
-            console.error("Errore di connessione al server", error);
+            console.error('Errore di connessione al server', error);
+            setErroreLogin('Impossibile contattare il server.');
         }
     };
 
@@ -69,6 +76,19 @@ function App() {
                             onChange={(e) => setEmailInput(e.target.value)}
                             required
                         />
+                        {/* NUOVO: campo password */}
+                        <input
+                            type="password"
+                            placeholder="La tua password..."
+                            className="border p-2 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value)}
+                            required
+                        />
+                        {/* NUOVO: messaggio di errore */}
+                        {erroreLogin && (
+                            <p className="text-red-500 text-sm">{erroreLogin}</p>
+                        )}
                         <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition">
                             Accedi / Registrati
                         </button>
@@ -114,6 +134,7 @@ function App() {
     );
 }
 
+<<<<<<< Updated upstream
 export default App;
 import { useState } from 'react';
 import DettaglioGruppo from './DettaglioGruppo.jsx';
@@ -349,3 +370,6 @@ function App() {
 }
 
 export default App;
+=======
+export default App;
+>>>>>>> Stashed changes

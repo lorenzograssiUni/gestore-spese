@@ -112,13 +112,13 @@ namespace gestione_spese.Controllers.Api
             return _context.Utenti.Any(e => e.Id == id);
         }
 
-        public class LoginRequest
+        public class UtenteLoginRequest
         {
             public string Email { get; set; }
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<Utente>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<Utente>> Login([FromBody] UtenteLoginRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Email))
                 return BadRequest("L'email è obbligatoria");
