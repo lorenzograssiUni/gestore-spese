@@ -11,7 +11,6 @@ function GraficoIstogramma({ spese, membri }) {
     if (totaliPerMembro.length === 0) return null;
 
     const COLORI = [
-        '#6366f1', '#3b82f6', '#10b981', '#f59e0b',
         '#ef4444', '#8b5cf6', '#06b6d4', '#f97316'
     ];
 
