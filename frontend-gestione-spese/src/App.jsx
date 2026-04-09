@@ -19,6 +19,8 @@ function App() {
     const [gruppoAttivoId, setGruppoAttivoId] = useState(null);
     const [vistaRiepilogo, setVistaRiepilogo] = useState(false);
     const [emailInput, setEmailInput] = useState('');
+    const [passwordInput, setPasswordInput] = useState('');
+    const [erroreLogin, setErroreLogin] = useState('');
 
     const handleLogout = () => {
         localStorage.removeItem('utente_spese');
@@ -35,24 +37,28 @@ function App() {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        if (!emailInput) return;
+        if (!emailInput || !passwordInput) return;
+        setErroreLogin('');
 
         try {
-            const response = await fetch(`${API_BASE_URL}/Utente/login`, {
+            const response = await fetch(`${API_BASE_URL}/Auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: emailInput })
+                body: JSON.stringify({ email: emailInput, password: passwordInput })
             });
 
             if (response.ok) {
                 const user = await response.json();
                 setUtente(user);
                 localStorage.setItem('utente_spese', JSON.stringify(user));
+            } else if (response.status === 401) {
+                setErroreLogin('Password errata. Riprova.');
             } else {
-                alert("Errore durante il login");
+                setErroreLogin('Errore durante il login. Riprova.');
             }
         } catch (error) {
-            console.error("Errore di connessione al server", error);
+            console.error('Errore di connessione al server', error);
+            setErroreLogin('Impossibile contattare il server.');
         }
     };
 
@@ -72,6 +78,17 @@ function App() {
                             onChange={(e) => setEmailInput(e.target.value)}
                             required
                         />
+                        <input
+                            type="password"
+                            placeholder="La tua password..."
+                            className="border p-2 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value)}
+                            required
+                        />
+                        {erroreLogin && (
+                            <p className="text-red-500 text-sm">{erroreLogin}</p>
+                        )}
                         <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition">
                             Accedi / Registrati
                         </button>
