@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import DettaglioGruppo from './DettaglioGruppo.jsx';
-import HomePage from './HomePage.jsx';
-import Navbar from './Navbar.jsx';
-import ModalNuovoGruppo from './ModalNuovoGruppo.jsx';
+import DettaglioGruppo from './pages/DettaglioGruppo.jsx';
+import HomePage from './pages/HomePage.jsx';
+import Navbar from './components/Navbar.jsx';
+import ModalNuovoGruppo from './components/ModalNuovoGruppo.jsx';
+import RiepilogoGruppo from './pages/RiepilogoGruppo.jsx';
 import './index.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5207/api';
@@ -16,12 +17,14 @@ function App() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [gruppoAttivoId, setGruppoAttivoId] = useState(null);
+    const [vistaRiepilogo, setVistaRiepilogo] = useState(false);
     const [emailInput, setEmailInput] = useState('');
 
     const handleLogout = () => {
         localStorage.removeItem('utente_spese');
         setUtente(null);
         setGruppoAttivoId(null);
+        setVistaRiepilogo(false);
     };
 
     const handleAggiornaUtente = (nuoviDati) => {
@@ -83,15 +86,21 @@ function App() {
             <Navbar
                 utente={utente}
                 onLogout={handleLogout}
-                onGoHome={() => setGruppoAttivoId(null)}
+                onGoHome={() => { setGruppoAttivoId(null); setVistaRiepilogo(false); }}
                 onAggiornaUtente={handleAggiornaUtente}
             />
 
             <main>
-                {gruppoAttivoId ? (
+                {vistaRiepilogo && gruppoAttivoId ? (
+                    <RiepilogoGruppo
+                        gruppoId={gruppoAttivoId}
+                        onBack={() => setVistaRiepilogo(false)}
+                    />
+                ) : gruppoAttivoId ? (
                     <DettaglioGruppo
                         gruppoId={gruppoAttivoId}
                         onBack={() => setGruppoAttivoId(null)}
+                        onApriRiepilogo={() => setVistaRiepilogo(true)}
                     />
                 ) : (
                     <HomePage
