@@ -194,13 +194,34 @@ namespace gestione_spese.Controllers.Api
 
                 var importoDaSaldare = Math.Min(debito, credito);
 
+                var riepilogoDb = await _context.Riepiloghi
+                    .FirstOrDefaultAsync(r =>
+                        r.Gruppo_ID == id &&
+                        r.ChiDeve_ID == debitori[i].Key &&
+                        r.AChiDeve_ID == creditori[j].Key);
+
+                if (riepilogoDb == null)
+                {
+                    riepilogoDb = new Riepilogo
+                    {
+                        Gruppo_ID = id,
+                        ChiDeve_ID = debitori[i].Key,
+                        AChiDeve_ID = creditori[j].Key,
+                        Importo = importoDaSaldare,
+                        Pagato = false
+                    };
+                    _context.Riepiloghi.Add(riepilogoDb);
+                    await _context.SaveChangesAsync();
+                }
+
                 riepiloghi.Add(new
                 {
+                    id = riepilogoDb.Id,
                     da = utenti.First(u => u.Id == debitori[i].Key).Nome,
                     a = utenti.First(u => u.Id == creditori[j].Key).Nome,
-                    importo = importoDaSaldare
+                    importo = importoDaSaldare,
+                    pagato = riepilogoDb.Pagato
                 });
-
                 debitori[i] = new KeyValuePair<int, decimal>(debitori[i].Key, -(debito - importoDaSaldare));
                 creditori[j] = new KeyValuePair<int, decimal>(creditori[j].Key, credito - importoDaSaldare);
 

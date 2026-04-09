@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import GruppoCard from './GruppoCard';
-
+import GruppoCard from '../components/GruppoCard';
 function HomePage({ utente, refreshKey, onOpenModal, onApriGruppo }) {
     const [gruppi, setGruppi] = useState([]);
     const [loading, setLoading] = useState(!!utente?.id);

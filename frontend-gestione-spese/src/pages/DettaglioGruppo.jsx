@@ -1,28 +1,22 @@
 import { useState, useEffect } from 'react';
-import ModalNuovaSpesa from './ModalNuovaSpesa';
-function DettaglioGruppo({ gruppoId, onBack }) {
-    const [gruppo, setGruppo] = useState(null);
-    const [riepiloghi, setRiepiloghi] = useState([]);
-    const [loading, setLoading] = useState(true);
+import ModalNuovaSpesa from '../components/ModalNuovaSpesa';
+import ModalModificaSpesa from '../components/ModalModificaSpesa';
+import { getGruppo, aggiungiBotAlGruppo, rimuoviMembroDalGruppo, eliminaGruppo, eliminaSpesa } from '../api/api';
 
+function DettaglioGruppo({ gruppoId, onBack, onApriRiepilogo }) {
+    const [gruppo, setGruppo] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [nuovoMembroNome, setNuovoMembroNome] = useState('');
     const [isAggiungendo, setIsAggiungendo] = useState(false);
     const [isModalSpesaOpen, setIsModalSpesaOpen] = useState(false);
-
-    const API_BASE_URL = import.meta.env.VITE_API_URL;
+    const [spesaInModifica, setSpesaInModifica] = useState(null);
 
     const caricaDatiGruppo = async () => {
         try {
-            const resGruppo = await fetch(`${API_BASE_URL}/gruppo/${gruppoId}`);
+            const resGruppo = await getGruppo(gruppoId);
             if (!resGruppo.ok) throw new Error("Gruppo non trovato");
             const dataGruppo = await resGruppo.json();
             setGruppo(dataGruppo);
-
-            const resBilanci = await fetch(`${API_BASE_URL}/gruppo/${gruppoId}/bilanci`);
-            if (resBilanci.ok) {
-                const dataBilanci = await resBilanci.json();
-                setRiepiloghi(dataBilanci);
-            }
         } catch (error) {
             console.error("Errore nel caricamento dati:", error);
         } finally {
@@ -37,26 +31,18 @@ function DettaglioGruppo({ gruppoId, onBack }) {
     const handleAggiungiMembro = async (e) => {
         e.preventDefault();
         if (!nuovoMembroNome.trim()) return;
-
         setIsAggiungendo(true);
-
         const nuovoUtente = {
             nome: nuovoMembroNome,
             email: `${nuovoMembroNome.toLowerCase().replace(/\s+/g, '')}_${Math.floor(Math.random() * 10000)}@bot.it`
         };
-
         try {
-            const response = await fetch(`${API_BASE_URL}/Gruppo/${gruppoId}/aggiungi-bot`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(nuovoUtente),
-            });
-
-            if (response.ok) {
+            const res = await aggiungiBotAlGruppo(gruppoId, nuovoUtente);
+            if (res.ok) {
                 setNuovoMembroNome('');
-                caricaDatiGruppo();    
+                caricaDatiGruppo();
             } else {
-                alert("Errore durante l'aggiunta dell'amico fittizio.");
+                alert("Errore durante l'aggiunta del membro.");
             }
         } catch (error) {
             console.error("Errore salvataggio utente:", error);
@@ -68,10 +54,8 @@ function DettaglioGruppo({ gruppoId, onBack }) {
     const handleEliminaGruppo = async () => {
         if (window.confirm("ATTENZIONE: Sei sicuro di voler eliminare questo gruppo? Tutte le spese verranno perse.")) {
             try {
-                const response = await fetch(`${API_BASE_URL}/gruppo/${gruppoId}`, {
-                    method: 'DELETE',
-                });
-                if (response.ok) onBack();
+                const res = await eliminaGruppo(gruppoId);
+                if (res.ok) onBack();
             } catch (error) {
                 console.error("Errore eliminazione gruppo:", error);
             }
@@ -81,10 +65,8 @@ function DettaglioGruppo({ gruppoId, onBack }) {
     const handleEliminaSpesa = async (spesaId) => {
         if (window.confirm("Eliminare questa spesa?")) {
             try {
-                const response = await fetch(`${API_BASE_URL}/spesa/${spesaId}`, {
-                    method: 'DELETE',
-                });
-                if (response.ok) caricaDatiGruppo();
+                const res = await eliminaSpesa(spesaId);
+                if (res.ok) caricaDatiGruppo();
             } catch (error) {
                 console.error("Errore eliminazione spesa:", error);
             }
@@ -99,12 +81,10 @@ function DettaglioGruppo({ gruppoId, onBack }) {
         }
         if (window.confirm(`Vuoi rimuovere ${nomeAmico} dal gruppo?`)) {
             try {
-                const response = await fetch(`${API_BASE_URL}/Gruppo/${gruppoId}/rimuovi-membro/${amicoId}`, {
-                    method: 'DELETE',
-                });
-                if (response.ok) caricaDatiGruppo();
+                const res = await rimuoviMembroDalGruppo(gruppoId, amicoId);
+                if (res.ok) caricaDatiGruppo();
             } catch (error) {
-                console.error("Errore eliminazione amico", error);
+                console.error("Errore eliminazione amico:", error);
             }
         }
     };
@@ -122,7 +102,8 @@ function DettaglioGruppo({ gruppoId, onBack }) {
 
     return (
         <main className="max-w-6xl mx-auto px-4 py-10 animate-fade-in">
-            {/* Navigazione Superiore */}
+
+            {/* Navigazione superiore */}
             <div className="flex justify-between items-center mb-6">
                 <button onClick={onBack} className="text-gray-500 hover:text-blue-600 font-medium flex items-center transition-colors">
                     <span className="mr-2">←</span> Torna ai gruppi
@@ -132,13 +113,19 @@ function DettaglioGruppo({ gruppoId, onBack }) {
                 </button>
             </div>
 
-            {/* Header del Gruppo */}
+            {/* Header gruppo */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="text-center md:text-left">
                     <h1 className="text-4xl font-black text-gray-900 mb-2">{gruppo.nome}</h1>
                     <p className="text-gray-500">{gruppo.descrizione || "Nessuna descrizione"}</p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onApriRiepilogo}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-md transition-all flex items-center gap-2"
+                    >
+                        <span>📊</span> Riepilogo
+                    </button>
                     <div className="bg-blue-50 px-6 py-3 rounded-2xl text-center">
                         <p className="text-xs font-bold text-blue-600 uppercase">Amici</p>
                         <p className="text-2xl font-black text-blue-800">{listaMembri.length}</p>
@@ -150,12 +137,14 @@ function DettaglioGruppo({ gruppoId, onBack }) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* COLONNA AMICI */}
+            {/* Grid membri + spese */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+                {/* COLONNA MEMBRI */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <h2 className="text-xl font-bold mb-4 text-gray-800">Membri</h2>
-                        <ul className="space-y-2 mb-6 max-h-60 overflow-y-auto pr-2">
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 h-96 flex flex-col">
+                        <h2 className="text-xl font-bold mb-4 text-gray-800 flex-shrink-0">Membri</h2>
+                        <ul className="space-y-2 overflow-y-auto pr-2 flex-1">
                             {listaMembri.map(m => (
                                 <li key={m.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl group">
                                     <span className="font-medium text-gray-700">{m.nome}</span>
@@ -165,7 +154,7 @@ function DettaglioGruppo({ gruppoId, onBack }) {
                                 </li>
                             ))}
                         </ul>
-                        <form onSubmit={handleAggiungiMembro} className="flex gap-2 border-t pt-4">
+                        <form onSubmit={handleAggiungiMembro} className="flex gap-2 border-t pt-4 flex-shrink-0 mt-4">
                             <input
                                 value={nuovoMembroNome}
                                 onChange={e => setNuovoMembroNome(e.target.value)}
@@ -181,18 +170,19 @@ function DettaglioGruppo({ gruppoId, onBack }) {
 
                 {/* COLONNA SPESE */}
                 <div className="lg:col-span-2">
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <div className="flex justify-between items-center mb-6">
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 h-96 flex flex-col">
+                        <div className="flex justify-between items-center mb-6 flex-shrink-0">
                             <h2 className="text-xl font-bold text-gray-800">Cronologia Spese</h2>
                             <button onClick={() => setIsModalSpesaOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-all">
                                 + Nuova Spesa
                             </button>
                         </div>
-
                         {listaSpese.length === 0 ? (
-                            <div className="text-center py-10 text-gray-400 italic">Nessuna spesa registrata.</div>
+                            <div className="flex-1 flex items-center justify-center text-gray-400 italic">
+                                Nessuna spesa registrata.
+                            </div>
                         ) : (
-                            <ul className="space-y-3">
+                            <ul className="space-y-3 overflow-y-auto pr-2 flex-1">
                                 {listaSpese.slice().reverse().map(s => {
                                     const chiPaga = listaMembri.find(m => m.id === s.chiPaga_ID)?.nome || "Sconosciuto";
                                     return (
@@ -201,8 +191,11 @@ function DettaglioGruppo({ gruppoId, onBack }) {
                                                 <p className="font-bold text-gray-800">{s.descrizione}</p>
                                                 <p className="text-xs text-gray-500">Pagato da <span className="text-blue-600 font-bold">{chiPaga}</span></p>
                                             </div>
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-3">
                                                 <span className="text-lg font-black text-gray-900">€{s.importo.toFixed(2)}</span>
+                                                <button onClick={() => setSpesaInModifica(s)} className="text-blue-300 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all">
+                                                    ✏️
+                                                </button>
                                                 <button onClick={() => handleEliminaSpesa(s.id)} className="text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
                                                     🗑
                                                 </button>
@@ -216,37 +209,22 @@ function DettaglioGruppo({ gruppoId, onBack }) {
                 </div>
             </div>
 
-            {/* SEZIONE BILANCI ("Chi deve a chi") */}
-            {riepiloghi.length > 0 && (
-                <div className="mt-8 bg-indigo-600 p-8 rounded-3xl text-white shadow-xl shadow-indigo-200">
-                    <h2 className="text-2xl font-black mb-1 flex items-center gap-2">
-                        <span>📊</span> Pareggio dei Conti
-                    </h2>
-                    <p className="text-indigo-100 text-sm mb-6">Ecco come dividere i debiti per tornare tutti in pari.</p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {riepiloghi.map((r, index) => (
-                            <div key={index} className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 flex justify-between items-center">
-                                <div>
-                                    <p className="text-xs font-bold uppercase text-indigo-200">Deve dare a</p>
-                                    <p className="text-lg font-bold"><span className="text-yellow-300">{r.da}</span> → {r.a}</p>
-                                </div>
-                                <div className="text-xl font-black bg-white text-indigo-600 px-3 py-1 rounded-lg">
-                                    €{r.importo.toFixed(2)}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Modal per aggiungere spese */}
+            {/* Modals */}
             {isModalSpesaOpen && (
                 <ModalNuovaSpesa
                     onClose={() => setIsModalSpesaOpen(false)}
                     onSpesaAggiunta={caricaDatiGruppo}
                     gruppoId={gruppoId}
                     membri={listaMembri}
+                />
+            )}
+
+            {spesaInModifica && (
+                <ModalModificaSpesa
+                    spesa={spesaInModifica}
+                    membri={listaMembri}
+                    onClose={() => setSpesaInModifica(null)}
+                    onSpesaModificata={caricaDatiGruppo}
                 />
             )}
         </main>

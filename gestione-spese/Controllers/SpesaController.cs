@@ -124,35 +124,54 @@ namespace gestione_spese.Controllers.Api
         }
 
         // PUT: api/Spesa/5
+        // PUT: api/Spesa/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSpesa(int id, [FromBody] Spesa spesa)
+        public async Task<IActionResult> PutSpesa(int id, [FromBody] NuovaSpesaDTO dto)
         {
-            if (id != spesa.Id)
+            var spesa = await _context.Spese
+                .Include(s => s.Divisioni)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (spesa == null) return NotFound("Spesa non trovata.");
+
+            var gruppo = await _context.Gruppi
+                .Include(g => g.Utenti)
+                .FirstOrDefaultAsync(g => g.Id == spesa.Gruppo_ID);
+
+            // Aggiorna i campi base
+            spesa.Descrizione = dto.Descrizione;
+            spesa.Importo = dto.Importo;
+            spesa.ChiPaga_ID = dto.ChiPaga_ID;
+
+            // Ricalcola le divisioni
+            _context.Divisioni.RemoveRange(spesa.Divisioni);
+
+            List<Utente> utentiDaAddebitare;
+            if (dto.UtentiCoinvoltiIds == null || !dto.UtentiCoinvoltiIds.Any())
             {
-                return BadRequest("L'ID dell'URL non corrisponde all'ID del corpo della richiesta.");
+                utentiDaAddebitare = gruppo.Utenti.ToList();
+            }
+            else
+            {
+                utentiDaAddebitare = gruppo.Utenti
+                    .Where(u => dto.UtentiCoinvoltiIds.Contains(u.Id))
+                    .ToList();
             }
 
-            _context.Entry(spesa).State = EntityState.Modified;
-
-            try
+            decimal quota = Math.Round(spesa.Importo / utentiDaAddebitare.Count, 2);
+            foreach (var utente in utentiDaAddebitare)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SpesaExists(id))
+                _context.Divisioni.Add(new DivisioneSpesa
                 {
-                    return NotFound("La spesa che stai cercando di aggiornare non esiste.");
-                }
-                else
-                {
-                    throw;
-                }
+                    Spesa_ID = spesa.Id,
+                    Utente_ID = utente.Id,
+                    Importo = quota
+                });
             }
 
-            return NoContent();
+            await _context.SaveChangesAsync();
+            return Ok(spesa);
         }
-
         // DELETE: api/Spesa/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSpesa(int id)
