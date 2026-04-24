@@ -21,6 +21,9 @@ function App() {
     const [emailInput, setEmailInput] = useState('');
     const [passwordInput, setPasswordInput] = useState('');
     const [erroreLogin, setErroreLogin] = useState('');
+    const [modalita, setModalita] = useState('login');
+    const [nomeInput, setNomeInput] = useState('');
+    const [confermaPasswordInput, setConfermaPasswordInput] = useState('');
 
     const handleLogout = () => {
         localStorage.removeItem('utente_spese');
@@ -37,8 +40,12 @@ function App() {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        if (!emailInput || !passwordInput) return;
         setErroreLogin('');
+
+        if (modalita === 'registrazione' && passwordInput !== confermaPasswordInput) {
+            setErroreLogin('Le password non coincidono.');
+            return;
+        }
 
         try {
             const response = await fetch(`${API_BASE_URL}/Auth/login`, {
@@ -49,12 +56,22 @@ function App() {
 
             if (response.ok) {
                 const user = await response.json();
+
+                if (modalita === 'registrazione' && nomeInput.trim()) {
+                    await fetch(`${API_BASE_URL}/Utente/${user.id}/nome`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nuovoNome: nomeInput.trim() })
+                    });
+                    user.nome = nomeInput.trim();
+                }
+
                 setUtente(user);
                 localStorage.setItem('utente_spese', JSON.stringify(user));
             } else if (response.status === 401) {
-                setErroreLogin('Password errata. Riprova.');
+                setErroreLogin(modalita === 'login' ? 'Password errata. Riprova.' : 'Email già registrata con password diversa.');
             } else {
-                setErroreLogin('Errore durante il login. Riprova.');
+                setErroreLogin('Errore durante l\'accesso. Riprova.');
             }
         } catch (error) {
             console.error('Errore di connessione al server', error);
@@ -67,9 +84,35 @@ function App() {
             <div className="flex items-center justify-center min-h-screen bg-gray-100 font-sans">
                 <div className="text-center p-10 bg-white rounded-3xl shadow-xl w-96">
                     <h2 className="text-2xl font-bold mb-2 text-blue-600">Split Mate</h2>
-                    <p className="mb-6 text-gray-500 text-sm">Accedi o registrati con la tua email</p>
+
+                    <div className="flex rounded-xl overflow-hidden border border-gray-200 mb-6">
+                        <button
+                            type="button"
+                            onClick={() => { setModalita('login'); setErroreLogin(''); }}
+                            className={`flex-1 py-2 text-sm font-semibold transition ${modalita === 'login' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+                        >
+                            Accedi
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { setModalita('registrazione'); setErroreLogin(''); }}
+                            className={`flex-1 py-2 text-sm font-semibold transition ${modalita === 'registrazione' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+                        >
+                            Registrati
+                        </button>
+                    </div>
 
                     <form onSubmit={handleLogin} className="flex flex-col gap-3 mb-2">
+                        {modalita === 'registrazione' && (
+                            <input
+                                type="text"
+                                placeholder="Il tuo nome..."
+                                className="border p-2 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                value={nomeInput}
+                                onChange={(e) => setNomeInput(e.target.value)}
+                                required
+                            />
+                        )}
                         <input
                             type="email"
                             placeholder="La tua email..."
@@ -86,11 +129,19 @@ function App() {
                             onChange={(e) => setPasswordInput(e.target.value)}
                             required
                         />
-                        {erroreLogin && (
-                            <p className="text-red-500 text-sm">{erroreLogin}</p>
+                        {modalita === 'registrazione' && (
+                            <input
+                                type="password"
+                                placeholder="Conferma password..."
+                                className="border p-2 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                value={confermaPasswordInput}
+                                onChange={(e) => setConfermaPasswordInput(e.target.value)}
+                                required
+                            />
                         )}
+                        {erroreLogin && <p className="text-red-500 text-sm">{erroreLogin}</p>}
                         <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition">
-                            Accedi / Registrati
+                            {modalita === 'login' ? 'Accedi' : 'Registrati'}
                         </button>
                     </form>
                 </div>
