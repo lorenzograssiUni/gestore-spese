@@ -53,7 +53,7 @@ namespace gestione_spese.Migrations
 
                     b.HasIndex("Utente_ID");
 
-                    b.ToTable("Divisioni");
+                    b.ToTable("Divisioni", (string)null);
                 });
 
             modelBuilder.Entity("gestione_spese.Models.Gruppo", b =>
@@ -84,7 +84,7 @@ namespace gestione_spese.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Gruppi");
+                    b.ToTable("Gruppi", (string)null);
                 });
 
             modelBuilder.Entity("gestione_spese.Models.Riepilogo", b =>
@@ -119,7 +119,7 @@ namespace gestione_spese.Migrations
 
                     b.HasIndex("Gruppo_ID");
 
-                    b.ToTable("Riepiloghi");
+                    b.ToTable("Riepiloghi", (string)null);
                 });
 
             modelBuilder.Entity("gestione_spese.Models.Spesa", b =>
@@ -154,7 +154,7 @@ namespace gestione_spese.Migrations
 
                     b.HasIndex("Gruppo_ID");
 
-                    b.ToTable("Spese");
+                    b.ToTable("Spese", (string)null);
                 });
 
             modelBuilder.Entity("gestione_spese.Models.Utente", b =>
@@ -177,7 +177,7 @@ namespace gestione_spese.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Utenti");
+                    b.ToTable("Utenti", (string)null);
                 });
 
             modelBuilder.Entity("GruppoUtente", b =>

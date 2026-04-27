@@ -267,7 +267,7 @@ namespace gestione_spese.Controllers.Api
             if (gruppo == null)
                 return NotFound("Gruppo non trovato");
 
-ì            if (string.IsNullOrWhiteSpace(botUser.Email))
+            if (string.IsNullOrWhiteSpace(botUser.Email))
             {
                 botUser.Email = $"bot_{Guid.NewGuid().ToString().Substring(0, 6)}@bot.local";
             }
