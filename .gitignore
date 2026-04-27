@@ -1,5 +1,3 @@
-.vs/ 
-**/Properties/launchSettings.json 
-**/appsettings.*.json 
-**/bin/ 
-**/obj/ 
+*.db
+*.db-shm
+*.db-wal
