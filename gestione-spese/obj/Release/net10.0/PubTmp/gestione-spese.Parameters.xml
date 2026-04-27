@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<parameters>
-  <parameter name="IIS Web Application Name" description="" value="gestione-spese" tags="IisApp">
-    <parameterEntry kind="ProviderPath" scope="IisApp" match="^C:\\Users\\Lori\\Desktop\\progetti\\gestore-spese\\gestione-spese\\obj\\Release\\net10\.0\\PubTmp\\Out\\$" />
-  </parameter>
-</parameters>
