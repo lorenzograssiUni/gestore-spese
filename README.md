@@ -1,37 +1,50 @@
-# 💲 Split Mate - Gestore Spese di Gruppo
+# Split Mate - Gestore Spese di Gruppo
 
 Una Web Application full-stack per la gestione e la divisione delle spese in gruppo, ideale per coinquilini, viaggi e cene tra amici.
 
+![CI](https://github.com/lorenzograssiUni/gestore-spese/actions/workflows/ci.yml/badge.svg)
+
 ---
 
-## 🚀 Demo Live
+## Demo Live
 
 | Componente | URL | Hosting |
 |---|---|---|
-| 🖥️ Frontend | [gestore-spese-xi.vercel.app](https://gestore-spese-xi.vercel.app) | Vercel |
-| ⚙️ Backend API | [https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/swagger) | Azure App Service |
+| Frontend | [gestore-spese-xi.vercel.app](https://gestore-spese-xi.vercel.app) | Vercel |
+| Backend API + Swagger | [gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/swagger](https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/swagger) | Azure App Service |
 
 ---
 
-## ✅ Funzionalità Principali
+## Credenziali di Prova
 
-* **Login / Registrazione:** Accesso tramite email. Se l'utente non esiste viene registrato automaticamente, altrimenti viene riconosciuto e loggato.
-* **Modifica Nome Utente:** Dalla Navbar è possibile cliccare sul proprio nome per modificarlo in tempo reale, senza bisogno di ricaricare la pagina.
+Per testare l'app senza registrarsi, usare le seguenti credenziali:
+
+| Campo | Valore |
+|---|---|
+| Email | `test@splitmate.it` |
+| Password | `test1234` |
+
+> L'account ha gia' alcuni gruppi e spese di esempio per mostrare tutte le funzionalita'.
+
+---
+
+## Funzionalita' Principali
+
+* **Login / Registrazione:** Form separati — il login accede solo a utenti gia' registrati, la registrazione crea un nuovo account.
+* **Modifica Nome Utente:** Dalla Navbar e' possibile cliccare sul proprio nome per modificarlo in tempo reale.
 * **Gestione Gruppi:** Creazione, visualizzazione ed eliminazione di gruppi di spesa.
-* **Codice Invito:** Ogni gruppo ha un codice univoco generato automaticamente. Chiunque può unirsi a un gruppo inserendo il codice invito dalla schermata principale.
-* **Gestione Membri:** Aggiunta di utenti fittizi (bot) all'interno di un gruppo specifico e rimozione degli stessi (solo se non hanno spese registrate).
-* **Gestione Spese:** Inserimento di nuove spese specificando chi ha pagato e l'importo. Possibilità di eliminare singole spese.
-* **Divisione Flessibile:** Possibilità di dividere la spesa equamente tra tutti i membri o solo tra alcuni membri selezionati.
-* **Calcolo Bilanci in Tempo Reale:** L'algoritmo calcola istantaneamente chi deve rimborsare chi (e quanto) per pareggiare i conti del gruppo, minimizzando il numero di transazioni.
-* **Eliminazione a cascata:** Cancellazione sicura delle singole spese, dei membri e dei gruppi.
+* **Codice Invito:** Ogni gruppo ha un codice univoco generato automaticamente per invitare altri utenti.
+* **Gestione Membri:** Aggiunta di utenti fittizi (bot) e rimozione degli stessi (solo se non hanno spese registrate).
+* **Gestione Spese:** Inserimento di nuove spese specificando chi ha pagato e l'importo, con possibilita' di eliminarle.
+* **Divisione Flessibile:** Divisione equa tra tutti i membri o solo tra alcuni selezionati.
+* **Calcolo Bilanci in Tempo Reale:** Algoritmo che calcola chi deve rimborsare chi minimizzando il numero di transazioni.
+* **Eliminazione a cascata:** Cancellazione sicura delle spese, dei membri e dei gruppi.
 
 ---
 
-## 🛠️ Stack Tecnologico
+## Stack Tecnologico
 
-Il progetto è strutturato in due parti (Frontend e Backend) all'interno di un unico monorepo:
-
-### Backend (C# / .NET) — Deploy su Azure App Service
+### Backend (C# / .NET) — Azure App Service
 * **Framework:** ASP.NET Core Web API
 * **Runtime:** .NET 10.0
 * **ORM:** Entity Framework Core
@@ -39,49 +52,93 @@ Il progetto è strutturato in due parti (Frontend e Backend) all'interno di un u
 * **Architettura:** RESTful API
 * **Hosting:** Azure App Service (Free F1, Sweden Central)
 
-### Frontend (React / Vite) — Deploy su Vercel
-* **Libreria Core:** React
+### Frontend (React / Vite) — Vercel
+* **Libreria Core:** React 18
 * **Build Tool:** Vite
 * **Styling:** Tailwind CSS
-* **Routing:** React Router DOM
-* **Hosting:** Vercel
+* **Hosting:** Vercel (auto-deploy da branch main)
 
 ---
 
-## 🌐 Utilizzo dell'App
+## Build e Avvio in Locale
 
-L'applicazione è già deployata e pronta all'uso, senza necessità di installare nulla.
+### Prerequisiti
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [Node.js 20+](https://nodejs.org)
+- [Git](https://git-scm.com)
 
-1. Apri il browser e vai su 👉 [gestore-spese-xi.vercel.app](https://gestore-spese-xi.vercel.app)
-2. Inserisci un'email per accedere o registrarti automaticamente.
-3. Crea un nuovo gruppo oppure unisciti a uno esistente tramite codice invito.
-4. Aggiungi spese, seleziona chi ha pagato e scegli come dividere il costo.
-5. Consulta il riepilogo per sapere chi deve rimborsare chi.
+### 1. Clona il repository
+```bash
+git clone https://github.com/lorenzograssiUni/gestore-spese.git
+cd gestore-spese
+```
 
-> ℹ️ Il frontend comunica automaticamente con il backend ospitato su Azure. Non è necessaria alcuna configurazione aggiuntiva.
+### 2. Avvia il Backend
+```bash
+cd gestione-spese
+dotnet restore
+dotnet ef database update
+dotnet run
+```
+Il backend sara' disponibile su `http://localhost:5207`.
+La documentazione Swagger e' accessibile su `http://localhost:5207/swagger`.
+
+### 3. Avvia il Frontend
+Apri un nuovo terminale:
+```bash
+cd frontend-gestione-spese
+npm install
+npm run dev
+```
+Il frontend sara' disponibile su `http://localhost:5173`.
+
+> **Nota:** Per far comunicare il frontend con il backend locale, crea il file `frontend-gestione-spese/.env.local` con il seguente contenuto:
+> ```
+> VITE_API_URL=http://localhost:5207/api
+> ```
 
 ---
 
-## 🗄️ Struttura del Database e del Progetto
+## Struttura del Repository
 
-Il database relazionale contiene le seguenti entità principali:
-* `Gruppi`: Contiene le informazioni generali dei gruppi (Nome, Descrizione, CodiceInvito).
-* `Utenti`: Partecipanti associati a uno specifico gruppo (Relazione N:M con Gruppi).
-* `Spese`: Registra l'importo totale, la descrizione e l'ID di chi ha pagato (`ChiPaga_ID`) (Relazione 1:N con Gruppi).
-* `DivisioniSpesa`: Tabella di appoggio che registra la quota esatta dovuta da ogni specifico utente per ogni specifica spesa (Relazione 1:N con Spese e Utenti). L'eliminazione avviene a cascata.
-
-### Organizzazione delle Cartelle
-- `/gestione-spese`: Contiene tutta la logica di Backend (Controllers, Models, Migrations).
-- `/frontend-gestione-spese`: Contiene l'interfaccia utente in React (Components, Pages, Assets).
+```
+gestore-spese/
+├── .github/
+│   └── workflows/
+│       └── ci.yml              # Pipeline CI/CD GitHub Actions
+├── docs/
+│   └── architettura.md         # Diagrammi architettura, deploy e database (Mermaid)
+├── gestione-spese/             # Backend ASP.NET Core
+│   ├── Controllers/            # AuthController, GruppoController, SpesaController...
+│   ├── Models/                 # Entita' del dominio (Utente, Gruppo, Spesa...)
+│   ├── Data/                   # ApplicationDbContext (Entity Framework)
+│   ├── Migrations/             # Migrazioni del database
+│   └── Program.cs              # Entry point e configurazione servizi
+└── frontend-gestione-spese/    # Frontend React/Vite
+    ├── src/
+    │   ├── pages/              # HomePage, DettaglioGruppo, RiepilogoGruppo
+    │   ├── components/         # Navbar, ModalNuovoGruppo...
+    │   └── App.jsx             # Root component con logica login/registrazione
+    └── package.json
+```
 
 ---
 
-## 📡 API e Logica di Calcolo
+## Documentazione Aggiuntiva
+
+| File | Contenuto |
+|---|---|
+| [docs/architettura.md](docs/architettura.md) | Diagrammi Mermaid: architettura generale, deploy e schema database ER |
+| [.github/workflows/ci.yml](.github/workflows/ci.yml) | Pipeline CI/CD: build automatica di backend e frontend ad ogni push |
+
+---
+
+## API e Logica di Calcolo
 
 Il backend espone un'architettura **RESTful** divisa per Controller (`GruppoController`, `SpesaController`, `UtenteController`, ecc.).
-Tra le logiche di business più interessanti c'è l'**algoritmo di pareggio dei debiti** (gestito dal `RiepilogoController`), che elabora i saldi positivi e negativi di ogni utente e restituisce le transazioni ottimali per saldare tutti i conti del gruppo con il minor numero di passaggi possibili.
+Tra le logiche di business piu' interessanti c'e' l'**algoritmo di pareggio dei debiti** (gestito dal `RiepilogoController`), che elabora i saldi positivi e negativi di ogni utente e restituisce le transazioni ottimali per saldare tutti i conti del gruppo con il minor numero di passaggi possibili.
 
 ---
 
-## 👥 Autori
+## Autori
 Sviluppato da **Mattia Negri**, **Lorenzo Grassi**, **Erica Paolasini**, **Simranjit Kaur** come progetto pratico di web development full-stack.
