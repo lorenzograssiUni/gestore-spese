@@ -1,8 +1,8 @@
-﻿using gestione_spese.Data;
+using gestione_spese.Data;
 using gestione_spese.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
+using System.Threading.Tasks;
 
 namespace gestione_spese.Controllers.Api
 {
@@ -21,45 +21,40 @@ namespace gestione_spese.Controllers.Api
         [HttpPost("login")]
         public async Task<ActionResult<Utente>> Login([FromBody] LoginRequest request)
         {
-            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
-                return BadRequest("Email e password sono obbligatorie.");
+            if (string.IsNullOrEmpty(request.Email))
+                return BadRequest("L'email è obbligatoria.");
 
             var utente = await _context.Utenti
                 .Include(u => u.Gruppi)
-                .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (utente == null)
-            {
-                // Registrazione automatica
-                utente = new Utente
-                {
-                    Email = request.Email,
-                    Nome = request.Email.Split('@')[0],
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
-                };
-                _context.Utenti.Add(utente);
-                await _context.SaveChangesAsync();
-                return Ok(utente);
-            }
-
-            // Login: verifica password
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, utente.PasswordHash))
-                return Unauthorized("Password errata.");
+                return Unauthorized("Utente non trovato. Registrati prima di accedere.");
 
             return Ok(utente);
         }
 
-        // GET: api/Auth/exists?email=...
-        [HttpGet("exists")]
-        public async Task<ActionResult<bool>> EmailExists([FromQuery] string email)
+        // POST: api/Auth/register
+        [HttpPost("register")]
+        public async Task<ActionResult<Utente>> Register([FromBody] RegisterRequest request)
         {
-            if (string.IsNullOrEmpty(email))
-                return BadRequest("Email obbligatoria.");
+            if (string.IsNullOrEmpty(request.Email))
+                return BadRequest("L'email è obbligatoria.");
 
-            var exists = await _context.Utenti
-                .AnyAsync(u => u.Email.ToLower() == email.ToLower());
+            var esistente = await _context.Utenti.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (esistente != null)
+                return Conflict("Un utente con questa email esiste già.");
 
-            return Ok(exists);
+            var utente = new Utente
+            {
+                Email = request.Email,
+                Nome = string.IsNullOrEmpty(request.Nome) ? request.Email.Split('@')[0] : request.Nome
+            };
+
+            _context.Utenti.Add(utente);
+            await _context.SaveChangesAsync();
+
+            return Ok(utente);
         }
     }
 
@@ -67,5 +62,12 @@ namespace gestione_spese.Controllers.Api
     {
         public string Email { get; set; }
         public string Password { get; set; }
+    }
+
+    public class RegisterRequest
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string Nome { get; set; }
     }
 }
