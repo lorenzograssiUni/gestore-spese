@@ -1,15 +1,15 @@
-# 🏗️ Diagramma Architettura — Split Mate
+# Diagramma Architettura - Split Mate
 
 ## Architettura Generale
 
 ```mermaid
 graph TB
-    subgraph CLIENT["🌐 Client (Browser)"] 
+    subgraph CLIENT["Client - Browser"]
         UI["React SPA\nVercel\ngestore-spese-xi.vercel.app"]
     end
 
-    subgraph BACKEND["⚙️ Backend (Azure App Service — Sweden Central)"]
-        API["ASP.NET Core Web API\n.NET 10.0"]
+    subgraph BACKEND["Backend - Azure App Service"]
+        API["ASP.NET Core Web API - .NET 10.0"]
         subgraph CONTROLLERS["Controllers"]
             AC["AuthController\nPOST /login\nPOST /register"]
             GC["GruppoController\nGET/POST/DELETE /Gruppo"]
@@ -17,21 +17,21 @@ graph TB
             UC["UtenteController\nGET/PUT /Utente"]
             RC["RiepilogoController\nGET /Riepilogo"]
         end
-        EF["Entity Framework Core\n(ORM)"]
+        EF["Entity Framework Core (ORM)"]
     end
 
-    subgraph DB["🗄️ Database"]
+    subgraph DB["Database"]
         SQLITE[("SQLite")]
         subgraph TABELLE["Tabelle"]
             T1["Utenti"]
             T2["Gruppi"]
             T3["Spese"]
             T4["DivisioniSpesa"]
-            T5["UtenteGruppo (N:M)"]
+            T5["UtenteGruppo N:M"]
         end
     end
 
-    UI -- "HTTP REST (JSON)\nVITE_API_URL" --> API
+    UI -- "HTTP REST JSON - VITE_API_URL" --> API
     API --> CONTROLLERS
     CONTROLLERS --> EF
     EF --> SQLITE
@@ -44,16 +44,16 @@ graph TB
 
 ```mermaid
 graph LR
-    DEV["👨‍💻 Developer\nLocal Machine"]
-    GH["📦 GitHub\nlorenzograssiUni/gestore-spese"]
+    DEV["Developer\nLocal Machine"]
+    GH["GitHub\nlorenzograssiUni/gestore-spese"]
 
     subgraph FRONTEND_DEPLOY["Frontend Deploy"]
-        VERCEL["▲ Vercel\nAuto-deploy da main\ngestore-spese-xi.vercel.app"]
+        VERCEL["Vercel\nAuto-deploy da main\ngestore-spese-xi.vercel.app"]
     end
 
     subgraph BACKEND_DEPLOY["Backend Deploy"]
-        AZURE["☁️ Azure App Service\nFree F1 — Sweden Central\nManuale da Visual Studio"]
-        AZUREDB["🗄️ SQLite\n(file locale sull'App Service)"]
+        AZURE["Azure App Service\nFree F1 - Sweden Central\nManuale da Visual Studio"]
+        AZUREDB["SQLite\nfile locale su App Service"]
     end
 
     DEV -- "git push" --> GH
