@@ -9,7 +9,7 @@ Una Web Application full-stack per la gestione e la divisione delle spese in gru
 | Componente | URL | Hosting |
 |---|---|---|
 | 🖥️ Frontend | [gestore-spese-xi.vercel.app](https://gestore-spese-xi.vercel.app) | Vercel |
-| ⚙️ Backend API | [gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net](https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net) | Azure App Service |
+| ⚙️ Backend API | [https://gestione-spese-hbhga0crf6hsagdn.swedencentral-01.azurewebsites.net/swagger) | Azure App Service |
 
 ---
 
