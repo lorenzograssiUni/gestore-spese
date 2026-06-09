@@ -53,7 +53,7 @@ Il progetto è strutturato in due parti (Frontend e Backend) all'interno di un u
 L'applicazione è già deployata e pronta all'uso, senza necessità di installare nulla.
 
 1. Apri il browser e vai su 👉 [gestore-spese-xi.vercel.app](https://gestore-spese-xi.vercel.app)
-2. Inserisci la tua email per accedere o registrarti automaticamente.
+2. Inserisci un'email per accedere o registrarti automaticamente.
 3. Crea un nuovo gruppo oppure unisciti a uno esistente tramite codice invito.
 4. Aggiungi spese, seleziona chi ha pagato e scegli come dividere il costo.
 5. Consulta il riepilogo per sapere chi deve rimborsare chi.
@@ -80,15 +80,6 @@ Il database relazionale contiene le seguenti entità principali:
 
 Il backend espone un'architettura **RESTful** divisa per Controller (`GruppoController`, `SpesaController`, `UtenteController`, ecc.).
 Tra le logiche di business più interessanti c'è l'**algoritmo di pareggio dei debiti** (gestito dal `RiepilogoController`), che elabora i saldi positivi e negativi di ogni utente e restituisce le transazioni ottimali per saldare tutti i conti del gruppo con il minor numero di passaggi possibili.
-
----
-
-## 🗺️ Roadmap
-
-* Storico delle transazioni e dei pagamenti completati.
-* Notifiche per i rimborsi pendenti.
-* Ottimizzazione del design pattern (es. integrazione del *Visitor pattern* per alcune logiche di esportazione dati).
-* App mobile (React Native).
 
 ---
 
