@@ -23,6 +23,7 @@ Per testare l'app senza registrarsi, usare le seguenti credenziali:
 |---|---|
 | Email | `test@splitmate.it` |
 | Password | `test1234` |
+| Codice Invito | `B74FC1B9` |
 
 > L'account ha gia' alcuni gruppi e spese di esempio per mostrare tutte le funzionalita'.
 
