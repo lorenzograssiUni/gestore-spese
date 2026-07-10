@@ -100,6 +100,52 @@ Il frontend sara' disponibile su `http://localhost:5173`.
 
 ---
 
+## Avvio con Docker
+
+### Prerequisiti
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (include Docker Compose)
+
+### Avvio completo (frontend + backend)
+```bash
+git clone https://github.com/lorenzograssiUni/gestore-spese.git
+cd gestore-spese
+docker compose up --build
+```
+
+Dopo il build:
+
+| Servizio | URL |
+|---|---|
+| Frontend | [http://localhost:3000](http://localhost:3000) |
+| Backend API | [http://localhost:5207](http://localhost:5207) |
+| Swagger UI | [http://localhost:5207/swagger](http://localhost:5207/swagger) |
+
+> **Nota:** Il database SQLite viene salvato in un volume Docker (`sqlite-data`) e persiste tra i riavvii del container.
+
+### Comandi utili
+```bash
+# Avvio in background
+docker compose up --build -d
+
+# Fermare i container
+docker compose down
+
+# Fermare e rimuovere anche i volumi (reset database)
+docker compose down -v
+
+# Visualizzare i log
+docker compose logs -f
+```
+
+### Struttura dei Dockerfile
+| File | Descrizione |
+|---|---|
+| `gestione-spese/Dockerfile` | Multi-stage build: SDK .NET 10 per la compilazione, ASP.NET runtime per l'esecuzione |
+| `frontend-gestione-spese/Dockerfile` | Multi-stage build: Node 20 per il build Vite, nginx per servire i file statici con SPA fallback |
+| `docker-compose.yml` | Orchestrazione dei due servizi con healthcheck e volume per SQLite |
+
+---
+
 ## Struttura del Repository
 
 ```
@@ -114,13 +160,16 @@ gestore-spese/
 │   ├── Models/                 # Entita' del dominio (Utente, Gruppo, Spesa...)
 │   ├── Data/                   # ApplicationDbContext (Entity Framework)
 │   ├── Migrations/             # Migrazioni del database
+│   ├── Dockerfile              # Docker image del backend
 │   └── Program.cs              # Entry point e configurazione servizi
-└── frontend-gestione-spese/    # Frontend React/Vite
-    ├── src/
-    │   ├── pages/              # HomePage, DettaglioGruppo, RiepilogoGruppo
-    │   ├── components/         # Navbar, ModalNuovoGruppo...
-    │   └── App.jsx             # Root component con logica login/registrazione
-    └── package.json
+├── frontend-gestione-spese/    # Frontend React/Vite
+│   ├── src/
+│   │   ├── pages/              # HomePage, DettaglioGruppo, RiepilogoGruppo
+│   │   ├── components/         # Navbar, ModalNuovoGruppo...
+│   │   └── App.jsx             # Root component con logica login/registrazione
+│   ├── Dockerfile              # Docker image del frontend (nginx)
+│   └── package.json
+└── docker-compose.yml          # Orchestrazione Docker completa
 ```
 
 ---
