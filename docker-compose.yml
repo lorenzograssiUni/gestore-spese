@@ -1,0 +1,43 @@
+# Docker Compose — Split Mate (avvio locale completo)
+# Uso: docker compose up --build
+#
+# Servizi:
+#   backend  → http://localhost:5207  (ASP.NET Core + SQLite)
+#   frontend → http://localhost:3000  (React/Vite servito da nginx)
+
+services:
+  backend:
+    build:
+      context: ./gestione-spese
+      dockerfile: Dockerfile
+    container_name: splitmate-backend
+    ports:
+      - "5207:5207"
+    volumes:
+      # Persistenza del database SQLite fuori dal container
+      - sqlite-data:/app/data
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5207
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5207/swagger"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend-gestione-spese
+      dockerfile: Dockerfile
+      args:
+        # Il frontend parla con il backend sulla macchina host
+        VITE_API_URL: http://localhost:5207/api
+    container_name: splitmate-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  sqlite-data:
