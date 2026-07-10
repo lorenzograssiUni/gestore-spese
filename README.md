@@ -3,6 +3,7 @@
 Una Web Application full-stack per la gestione e la divisione delle spese in gruppo, ideale per coinquilini, viaggi e cene tra amici.
 
 ![CI](https://github.com/lorenzograssiUni/gestore-spese/actions/workflows/ci.yml/badge.svg)
+![Docker](https://github.com/lorenzograssiUni/gestore-spese/actions/workflows/docker.yml/badge.svg)
 
 ---
 
@@ -152,7 +153,8 @@ docker compose logs -f
 gestore-spese/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml              # Pipeline CI/CD GitHub Actions
+│       ├── ci.yml              # Pipeline CI/CD: build backend e frontend ad ogni push
+│       └── docker.yml          # Pipeline CI/CD: build e validazione immagini Docker
 ├── docs/
 │   └── architettura.md         # Diagrammi architettura, deploy e database (Mermaid)
 ├── gestione-spese/             # Backend ASP.NET Core
@@ -180,6 +182,7 @@ gestore-spese/
 |---|---|
 | [docs/architettura.md](docs/architettura.md) | Diagrammi Mermaid: architettura generale, deploy e schema database ER |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | Pipeline CI/CD: build automatica di backend e frontend ad ogni push |
+| [.github/workflows/docker.yml](.github/workflows/docker.yml) | Pipeline CI/CD: build e validazione immagini Docker ad ogni push |
 
 ---
 
