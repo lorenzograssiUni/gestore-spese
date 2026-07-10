@@ -1,0 +1,67 @@
+name: Docker - Build Check
+
+# Verifica che le immagini Docker si costruiscano correttamente ad ogni push
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'gestione-spese/Dockerfile'
+      - 'frontend-gestione-spese/Dockerfile'
+      - 'docker-compose.yml'
+      - 'gestione-spese/**'
+      - 'frontend-gestione-spese/**'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docker-backend:
+    name: Build Docker Image - Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./gestione-spese
+          file: ./gestione-spese/Dockerfile
+          push: false
+          tags: splitmate-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  docker-frontend:
+    name: Build Docker Image - Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend-gestione-spese
+          file: ./frontend-gestione-spese/Dockerfile
+          push: false
+          tags: splitmate-frontend:ci
+          build-args: |
+            VITE_API_URL=http://localhost:5207/api
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  docker-compose-validate:
+    name: Validate docker-compose.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate docker-compose syntax
+        run: docker compose config --quiet
