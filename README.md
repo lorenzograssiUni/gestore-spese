@@ -87,46 +87,7 @@ I Dockerfile e il `docker-compose.yml` sono stati aggiunti per garantire la ripr
 
 ---
 
-## Build e Avvio in Locale
-
-### Prerequisiti
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Node.js 20+](https://nodejs.org)
-- [Git](https://git-scm.com)
-
-### 1. Clona il repository
-```bash
-git clone https://github.com/lorenzograssiUni/gestore-spese.git
-cd gestore-spese
-```
-
-### 2. Avvia il Backend
-```bash
-cd gestione-spese
-dotnet restore
-dotnet ef database update
-dotnet run
-```
-Il backend sara' disponibile su `http://localhost:5207`.
-La documentazione Swagger e' accessibile su `http://localhost:5207/swagger`.
-
-### 3. Avvia il Frontend
-Apri un nuovo terminale:
-```bash
-cd frontend-gestione-spese
-npm install
-npm run dev
-```
-Il frontend sara' disponibile su `http://localhost:5173`.
-
-> **Nota:** Per far comunicare il frontend con il backend locale, crea il file `frontend-gestione-spese/.env.local` con il seguente contenuto:
-> ```
-> VITE_API_URL=http://localhost:5207/api
-> ```
-
----
-
-## Avvio con Docker
+## Build e Avvio in Locale con Docker
 
 ### Prerequisiti
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (include Docker Compose)
