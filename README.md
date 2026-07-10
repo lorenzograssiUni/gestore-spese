@@ -62,6 +62,31 @@ Per testare l'app senza registrarsi, usare le seguenti credenziali:
 
 ---
 
+## Scelte Progettuali
+
+### Perche' ASP.NET Core (C#) per il backend?
+Il team aveva familiarita' con C# e l'ecosistema .NET. ASP.NET Core offre ottime performance, un sistema di dependency injection nativo, e si integra perfettamente con Entity Framework Core per la gestione del database. La generazione automatica della documentazione Swagger tramite Swashbuckle ha semplificato il testing delle API durante lo sviluppo.
+
+### Perche' SQLite come database?
+Trattandosi di un progetto didattico con carico limitato, SQLite e' stata la scelta piu' pragmatica: nessun server da configurare, il database e' un singolo file, e Entity Framework Core lo supporta nativamente. In un contesto di produzione reale si migrerebbe facilmente a PostgreSQL o Azure SQL semplicemente cambiando il connection string e il provider EF.
+
+### Perche' React + Vite per il frontend?
+React permette di costruire UI reattive a componenti riutilizzabili, ideale per una SPA con molte interazioni (modali, aggiornamenti in tempo reale dei bilanci, liste dinamiche). Vite e' stato scelto come build tool al posto di Create React App per la sua velocita' di avvio in sviluppo (HMR istantaneo) e build di produzione piu' ottimizzate.
+
+### Perche' Tailwind CSS?
+Tailwind consente di stilare i componenti direttamente nel JSX senza dover gestire file CSS separati, velocizzando lo sviluppo e mantenendo la consistenza visiva. Le utility class evitano conflitti di naming e rendono ogni componente autonomo e facile da modificare.
+
+### Perche' Vercel + Azure App Service per il deploy?
+Vercel e' la piattaforma piu' semplice per deployare app React: si connette direttamente al repository GitHub e fa auto-deploy ad ogni push su `main`, senza configurazione. Azure App Service e' stato scelto per il backend perche' supporta nativamente .NET e offre un piano gratuito (F1) sufficiente per un progetto dimostrativo.
+
+### Perche' un algoritmo di minimizzazione delle transazioni?
+Un approccio naive (ogni utente rimborsa chi ha pagato direttamente) genera molte transazioni ridondanti in gruppi numerosi. L'algoritmo implementato calcola il saldo netto di ciascun utente e risolve il problema come un problema di flusso: abbina i creditori ai debitori in modo ottimale, riducendo al minimo il numero di bonifici necessari per pareggiare tutti i conti.
+
+### Perche' Docker?
+I Dockerfile e il `docker-compose.yml` sono stati aggiunti per garantire la riproducibilita' dell'ambiente di sviluppo: chiunque cloni il repository puo' avviare l'intera applicazione con un singolo comando (`docker compose up --build`), senza dover installare .NET SDK o Node.js localmente.
+
+---
+
 ## Build e Avvio in Locale
 
 ### Prerequisiti
