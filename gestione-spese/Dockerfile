@@ -2,6 +2,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
+# Usa solo la cartella NuGet interna al container (niente fallback Windows)
+ENV NUGET_PACKAGES=/root/.nuget/packages
+
 COPY gestione-spese.csproj ./
 RUN dotnet restore
 
