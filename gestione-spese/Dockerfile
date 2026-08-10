@@ -14,7 +14,7 @@ RUN dotnet restore gestione-spese.csproj --configfile NuGet.Config
 COPY . ./
 
 # Clean per evitare bin/obj sporchi
-RUN dotnet clean gestione-spese.csproj
+RUN dotnet clean gestione-spese.csproj || true
 
 # Workaround: rimuovi qualsiasi riferimento alla fallback folder di Visual Studio
 RUN sed -i 's#C\\\\Program Files (x86)\\\\Microsoft Visual Studio\\\\Shared\\\\NuGetPackages##g' NuGet.Config
@@ -32,7 +32,7 @@ COPY --from=build /app/publish .
 VOLUME ["/app/data"]
 
 ENV ASPNETCORE_URLS=http://+:5207
-ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_ENVIRONMENT=Docker
 
 EXPOSE 5207
 ENTRYPOINT ["dotnet", "gestione-spese.dll"]
