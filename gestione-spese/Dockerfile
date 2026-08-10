@@ -13,6 +13,9 @@ RUN dotnet restore gestione-spese.csproj --configfile NuGet.Config
 # Copia tutto il resto del codice
 COPY . ./
 
+# Clean per evitare bin/obj sporchi
+RUN dotnet clean gestione-spese.csproj
+
 # Workaround: rimuovi qualsiasi riferimento alla fallback folder di Visual Studio
 RUN sed -i 's#C\\\\Program Files (x86)\\\\Microsoft Visual Studio\\\\Shared\\\\NuGetPackages##g' NuGet.Config
 
