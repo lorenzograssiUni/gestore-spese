@@ -7,20 +7,17 @@ ENV NUGET_PACKAGES=/root/.nuget/packages
 # Copia csproj e NuGet.Config prima del restore
 COPY gestione-spese.csproj NuGet.Config ./
 
+# Workaround: rimuovi qualsiasi riferimento alla fallback folder di Visual Studio PRIMA del restore
+RUN sed -i 's#C\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages##g' NuGet.Config
+
 # Restore usando SOLO la config locale
 RUN dotnet restore gestione-spese.csproj --configfile NuGet.Config
 
 # Copia tutto il resto del codice
 COPY . ./
 
-# Clean per evitare bin/obj sporchi
-RUN dotnet clean gestione-spese.csproj || true
-
-# Workaround: rimuovi qualsiasi riferimento alla fallback folder di Visual Studio
-RUN sed -i 's#C\\\\Program Files (x86)\\\\Microsoft Visual Studio\\\\Shared\\\\NuGetPackages##g' NuGet.Config
-
-# Publish usando ancora SOLO la config locale
-RUN dotnet publish gestione-spese.csproj -c Release -o /app/publish --no-restore --configfile NuGet.Config
+# Publish usando la config locale
+RUN dotnet publish gestione-spese.csproj -c Release -o /app/publish --configfile NuGet.Config
 
 # ── Runtime stage ─────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime

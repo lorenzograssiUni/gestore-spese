@@ -20,7 +20,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5207
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5207/swagger"]
+      test: ["CMD", "curl", "-f", "http://localhost:5207/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -37,7 +37,7 @@ services:
       - "3000:80"
     depends_on:
       backend:
-        condition: service_healthy
+        condition: service_started
 
 volumes:
   sqlite-data:
