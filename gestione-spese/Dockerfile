@@ -2,19 +2,21 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Usa solo la cartella NuGet interna al container
 ENV NUGET_PACKAGES=/root/.nuget/packages
 
 # Copia csproj e NuGet.Config prima del restore
 COPY gestione-spese.csproj NuGet.Config ./
 
-# Usa la config locale, ignorando quella globale di Visual Studio
+# Restore usando SOLO la config locale
 RUN dotnet restore gestione-spese.csproj --configfile NuGet.Config
 
 # Copia tutto il resto del codice
 COPY . ./
 
-# Usa ancora la stessa config per la publish
+# Workaround: rimuovi qualsiasi riferimento alla fallback folder di Visual Studio
+RUN sed -i 's#C\\\\Program Files (x86)\\\\Microsoft Visual Studio\\\\Shared\\\\NuGetPackages##g' NuGet.Config
+
+# Publish usando ancora SOLO la config locale
 RUN dotnet publish gestione-spese.csproj -c Release -o /app/publish --no-restore --configfile NuGet.Config
 
 # ── Runtime stage ─────────────────────────────────────────────────
