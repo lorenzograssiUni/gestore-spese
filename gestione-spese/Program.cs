@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.EntityFrameworkCore;
 using gestione_spese.Data;
 
@@ -12,10 +13,21 @@ builder.Services.AddControllersWithViews()
 
 builder.Services.AddHttpClient();
 
-// ✅ Percorso persistente su Azure App Service (C:\home)
-var dbPath = Path.Combine("C:\\home", "gestionespese.db");
+// DB path diverso per Docker (Linux) e per Windows
+string dbPath;
 
-builder.Services.AddDbContext<gestione_spese.Data.ApplicationDbContext>(options =>
+if (builder.Environment.IsEnvironment("Docker"))
+{
+    // Dentro Docker: usa la cartella montata dal volume /app/data
+    dbPath = Path.Combine("/app/data", "gestionespese.db");
+}
+else
+{
+    // Default (Windows / Azure App Service): C:\home\gestionespese.db
+    dbPath = Path.Combine("C:\\home", "gestionespese.db");
+}
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
 builder.Services.AddEndpointsApiExplorer();

@@ -17,7 +17,7 @@ services:
       # Persistenza del database SQLite fuori dal container
       - sqlite-data:/app/data
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - DOTNET_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://+:5207
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5207/"]
