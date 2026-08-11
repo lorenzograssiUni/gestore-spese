@@ -19,7 +19,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore gestione-spese/gestione-spese.csproj
+        run: dotnet restore gestione-spese/gestione-spese.csproj --configfile gestione-spese/NuGet.Config
 
       - name: Build
         run: dotnet build gestione-spese/gestione-spese.csproj --no-restore --configuration Release
