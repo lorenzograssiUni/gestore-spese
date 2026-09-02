@@ -21,11 +21,7 @@ public class SpesaController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var spese = await _context.Spese
-            .Include(s => s.Utente)
-            .Include(s => s.Gruppo)
-            .ToListAsync();
-
+        var spese = await _context.Spese.ToListAsync();
         return View(spese);
     }
 
@@ -36,10 +32,7 @@ public class SpesaController : Controller
             return NotFound();
         }
 
-        var spesa = await _context.Spese
-            .Include(s => s.Utente)
-            .Include(s => s.Gruppo)
-            .FirstOrDefaultAsync(m => m.Id == id);
+        var spesa = await _context.Spese.FirstOrDefaultAsync(m => m.Id == id);
 
         if (spesa == null)
         {
@@ -51,8 +44,6 @@ public class SpesaController : Controller
 
     public IActionResult Create()
     {
-        ViewBag.Utenti = _context.Utenti.ToList();
-        ViewBag.Gruppi = _context.Gruppi.ToList();
         return View();
     }
 
@@ -67,8 +58,6 @@ public class SpesaController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        ViewBag.Utenti = _context.Utenti.ToList();
-        ViewBag.Gruppi = _context.Gruppi.ToList();
         return View(spesa);
     }
 
@@ -79,18 +68,13 @@ public class SpesaController : Controller
             return NotFound();
         }
 
-        var spesa = await _context.Spese
-            .Include(s => s.Utente)
-            .Include(s => s.Gruppo)
-            .FirstOrDefaultAsync(m => m.Id == id);
+        var spesa = await _context.Spese.FirstOrDefaultAsync(m => m.Id == id);
 
         if (spesa == null)
         {
             return NotFound();
         }
 
-        ViewBag.Utenti = _context.Utenti.ToList();
-        ViewBag.Gruppi = _context.Gruppi.ToList();
         return View(spesa);
     }
 
@@ -124,8 +108,6 @@ public class SpesaController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        ViewBag.Utenti = _context.Utenti.ToList();
-        ViewBag.Gruppi = _context.Gruppi.ToList();
         return View(spesa);
     }
 
@@ -136,10 +118,7 @@ public class SpesaController : Controller
             return NotFound();
         }
 
-        var spesa = await _context.Spese
-            .Include(s => s.Utente)
-            .Include(s => s.Gruppo)
-            .FirstOrDefaultAsync(m => m.Id == id);
+        var spesa = await _context.Spese.FirstOrDefaultAsync(m => m.Id == id);
 
         if (spesa == null)
         {
