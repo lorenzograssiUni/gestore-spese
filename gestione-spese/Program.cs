@@ -1,80 +1,68 @@
-using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using gestione_spese.Data;
+using gestione_spese.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler =
-            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    });
+// Add services to the container.
+builder.Services.AddControllersWithViews();
 
-builder.Services.AddHttpClient();
-
-// DB path diverso per Docker (Linux) e per Windows
-string dbPath;
-
-if (builder.Environment.IsEnvironment("Docker"))
-{
-    // Dentro Docker: usa la cartella montata dal volume /app/data
-    dbPath = Path.Combine("/app/data", "gestionespese.db");
-}
-else
-{
-    // Default (Windows / Azure App Service): C:\home\gestionespese.db
-    dbPath = Path.Combine("C:\\home", "gestionespese.db");
-}
-
+// Add ApplicationDbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddEndpointsApiExplorer();
+// Configure JWT Authentication
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key not configured");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer not configured");
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience not configured");
 
-// ✅ Swagger senza OpenApiInfo (evita il problema del pacchetto mancante)
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddAuthentication(options =>
 {
-    c.CustomSchemaIds(type => type.FullName);
-    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
-});
-
-builder.Services.AddCors(options =>
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ClockSkew = TimeSpan.Zero
+    };
 });
+
+builder.Services.AddAuthorization();
+
+// Register JwtTokenService
+builder.Services.AddScoped<JwtTokenService>();
 
 var app = builder.Build();
 
-// ✅ Crea le tabelle se non esistono
-try
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
-    using (var scope = app.Services.CreateScope())
-    {
-        var context = scope.ServiceProvider
-            .GetRequiredService<gestione_spese.Data.ApplicationDbContext>();
-        context.Database.EnsureCreated();
-    }
-}
-catch (Exception ex)
-{
-    File.AppendAllText("C:\\home\\startup-log.txt",
-        $"[{DateTime.Now}] DB ERROR: {ex.Message}\n");
+    app.UseExceptionHandler();
+    app.UseHsts();
 }
 
-app.UseDeveloperExceptionPage();
-
-app.UseSwagger();
-app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gestione Spese API v1"));
+app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseRouting();
-app.UseCors("AllowAll");
+
+app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
