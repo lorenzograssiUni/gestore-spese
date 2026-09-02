@@ -1,196 +1,170 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using gestione_spese.Models;
 using gestione_spese.Data;
+using gestione_spese.Models;
 
-namespace gestione_spese.Controllers.Api
+namespace gestione_spese.Controllers;
+
+[Authorize]
+public class SpesaController : Controller
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class SpesaController : ControllerBase
+    private readonly ApplicationDbContext _context;
+    private readonly ILogger<SpesaController> _logger;
+
+    public SpesaController(ApplicationDbContext context, ILogger<SpesaController> logger)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+        _logger = logger;
+    }
 
-        public SpesaController(ApplicationDbContext context)
+    public async Task<IActionResult> Index()
+    {
+        var spese = await _context.Spese
+            .Include(s => s.Utente)
+            .Include(s => s.Gruppo)
+            .ToListAsync();
+
+        return View(spese);
+    }
+
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        // GET: api/Spesa
-        // Recupera tutte le spese registrate
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Spesa>>> GetSpese()
+        var spesa = await _context.Spese
+            .Include(s => s.Utente)
+            .Include(s => s.Gruppo)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (spesa == null)
         {
-            return await _context.Spese
-                .Include(s => s.Gruppo)        
-                .Include(s => s.UtenteChePaga)
-                .ToListAsync();
+            return NotFound();
         }
 
-        // GET: api/Spesa/5
-        // Recupera i dettagli di una singola spesa
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Spesa>> GetSpesa(int id)
+        return View(spesa);
+    }
+
+    public IActionResult Create()
+    {
+        ViewBag.Utenti = _context.Utenti.ToList();
+        ViewBag.Gruppi = _context.Gruppi.ToList();
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create([Bind] Spesa spesa)
+    {
+        if (ModelState.IsValid)
         {
-            var spesa = await _context.Spese
-                .Include(s => s.Gruppo)
-                .Include(s => s.UtenteChePaga)
-                .Include(s => s.Divisioni)     
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (spesa == null)
-            {
-                return NotFound("Spesa non trovata.");
-            }
-
-            return spesa;
+            _context.Add(spesa);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: api/Spesa/Gruppo/2
-        [HttpGet("Gruppo/{gruppoId}")]
-        public async Task<ActionResult<IEnumerable<Spesa>>> GetSpesePerGruppo(int gruppoId)
+        ViewBag.Utenti = _context.Utenti.ToList();
+        ViewBag.Gruppi = _context.Gruppi.ToList();
+        return View(spesa);
+    }
+
+    public async Task<IActionResult> Edit(int? id)
+    {
+        if (id == null)
         {
-            var spese = await _context.Spese
-                .Include(s => s.UtenteChePaga)
-                .Where(s => s.Gruppo_ID == gruppoId)
-                .ToListAsync();
-
-            if (!spese.Any())
-            {
-                return NotFound("Nessuna spesa trovata per questo gruppo.");
-            }
-
-            return spese;
+            return NotFound();
         }
 
-        // POST: api/Spesa
-        [HttpPost]
-        public async Task<ActionResult<Spesa>> PostSpesa([FromBody] NuovaSpesaDTO dto)
+        var spesa = await _context.Spese
+            .Include(s => s.Utente)
+            .Include(s => s.Gruppo)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (spesa == null)
         {
-            var gruppo = await _context.Gruppi
-                .Include(g => g.Utenti) 
-                .FirstOrDefaultAsync(g => g.Id == dto.Gruppo_ID);
+            return NotFound();
+        }
 
-            var utenteEsiste = await _context.Utenti.AnyAsync(u => u.Id == dto.ChiPaga_ID);
+        ViewBag.Utenti = _context.Utenti.ToList();
+        ViewBag.Gruppi = _context.Gruppi.ToList();
+        return View(spesa);
+    }
 
-            if (gruppo == null) return BadRequest("Il Gruppo specificato non esiste.");
-            if (!utenteEsiste) return BadRequest("L'Utente specificato come pagatore non esiste.");
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, [Bind] Spesa spesa)
+    {
+        if (id != spesa.Id)
+        {
+            return NotFound();
+        }
 
-            var nuovaSpesa = new Spesa
+        if (ModelState.IsValid)
+        {
+            try
             {
-                Gruppo_ID = dto.Gruppo_ID,
-                ChiPaga_ID = dto.ChiPaga_ID,
-                Importo = dto.Importo,
-                Descrizione = dto.Descrizione,
-                DataSpesa = System.DateTime.Now
-            };
-
-            _context.Spese.Add(nuovaSpesa);
-            await _context.SaveChangesAsync(); 
-
-            List<Utente> utentiDaAddebitare;
-
-            if (dto.UtentiCoinvoltiIds == null || !dto.UtentiCoinvoltiIds.Any())
-            {
-                utentiDaAddebitare = gruppo.Utenti.ToList();
-            }
-            else
-            {
-                utentiDaAddebitare = gruppo.Utenti.Where(u => dto.UtentiCoinvoltiIds.Contains(u.Id)).ToList();
-            }
-
-            if (utentiDaAddebitare.Any())
-            {
-                decimal quota = Math.Round(nuovaSpesa.Importo / utentiDaAddebitare.Count, 2);
-
-                foreach (var utente in utentiDaAddebitare)
-                {
-                    var divisione = new DivisioneSpesa
-                    {
-                        Spesa_ID = nuovaSpesa.Id,
-                        Utente_ID = utente.Id,
-                        Importo = quota
-                    };
-                    _context.Divisioni.Add(divisione);
-                }
-
+                _context.Update(spesa);
                 await _context.SaveChangesAsync();
             }
-
-            return CreatedAtAction(nameof(GetSpesa), new { id = nuovaSpesa.Id }, nuovaSpesa);
-        }
-
-        // PUT: api/Spesa/5
-        // PUT: api/Spesa/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSpesa(int id, [FromBody] NuovaSpesaDTO dto)
-        {
-            var spesa = await _context.Spese
-                .Include(s => s.Divisioni)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (spesa == null) return NotFound("Spesa non trovata.");
-
-            var gruppo = await _context.Gruppi
-                .Include(g => g.Utenti)
-                .FirstOrDefaultAsync(g => g.Id == spesa.Gruppo_ID);
-
-            // Aggiorna i campi base
-            spesa.Descrizione = dto.Descrizione;
-            spesa.Importo = dto.Importo;
-            spesa.ChiPaga_ID = dto.ChiPaga_ID;
-
-            // Ricalcola le divisioni
-            _context.Divisioni.RemoveRange(spesa.Divisioni);
-
-            List<Utente> utentiDaAddebitare;
-            if (dto.UtentiCoinvoltiIds == null || !dto.UtentiCoinvoltiIds.Any())
+            catch (DbUpdateConcurrencyException)
             {
-                utentiDaAddebitare = gruppo.Utenti.ToList();
-            }
-            else
-            {
-                utentiDaAddebitare = gruppo.Utenti
-                    .Where(u => dto.UtentiCoinvoltiIds.Contains(u.Id))
-                    .ToList();
-            }
-
-            decimal quota = Math.Round(spesa.Importo / utentiDaAddebitare.Count, 2);
-            foreach (var utente in utentiDaAddebitare)
-            {
-                _context.Divisioni.Add(new DivisioneSpesa
+                if (!SpesaExists(spesa.Id))
                 {
-                    Spesa_ID = spesa.Id,
-                    Utente_ID = utente.Id,
-                    Importo = quota
-                });
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
             }
-
-            await _context.SaveChangesAsync();
-            return Ok(spesa);
+            return RedirectToAction(nameof(Index));
         }
-        // DELETE: api/Spesa/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSpesa(int id)
-        {
-            var spesa = await _context.Spese.FindAsync(id);
-            if (spesa == null)
-            {
-                return NotFound();
-            }
 
+        ViewBag.Utenti = _context.Utenti.ToList();
+        ViewBag.Gruppi = _context.Gruppi.ToList();
+        return View(spesa);
+    }
+
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var spesa = await _context.Spese
+            .Include(s => s.Utente)
+            .Include(s => s.Gruppo)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (spesa == null)
+        {
+            return NotFound();
+        }
+
+        return View(spesa);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var spesa = await _context.Spese.FindAsync(id);
+        if (spesa != null)
+        {
             _context.Spese.Remove(spesa);
             await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
-        private bool SpesaExists(int id)
-        {
-            return _context.Spese.Any(e => e.Id == id);
-        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    private bool SpesaExists(int id)
+    {
+        return _context.Spese.Any(e => e.Id == id);
     }
 }
