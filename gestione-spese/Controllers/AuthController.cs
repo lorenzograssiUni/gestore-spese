@@ -53,15 +53,15 @@ public class AuthController : Controller
         var token = _jwtTokenService.GenerateToken(utente);
 
         _logger.LogInformation("Login riuscito per utente: {Email}", request.Email);
-        return Ok(new { token, expiresIn = 1800, utente = new { utente.Id, utente.Email } });
+        return Ok(new { token, expiresIn = 1800, utente = new { utente.Id, utente.Email, utente.Nome } });
     }
 
     [HttpPost("/api/auth/register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.Nome))
         {
-            return BadRequest(new { message = "Email e password sono richiesti" });
+            return BadRequest(new { message = "Nome, email e password sono richiesti" });
         }
 
         // Verifica se l'utente esiste già
@@ -75,7 +75,9 @@ public class AuthController : Controller
 
         var nuovoUtente = new Utente
         {
-            Email = request.Email
+            Nome = request.Nome,
+            Email = request.Email,
+            PasswordHash = null // TODO: quando aggiungi l'hash, valorizzalo qui
         };
 
         _context.Utenti.Add(nuovoUtente);
@@ -94,6 +96,7 @@ public class LoginRequest
 
 public class RegisterRequest
 {
+    public string Nome { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
 }
