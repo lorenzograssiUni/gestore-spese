@@ -87,6 +87,12 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// Forza porta 8080 in ambiente Docker
+if (app.Environment.IsEnvironment("Docker"))
+{
+    app.Urls.Add("http://+:8080");
+}
+
 if (!app.Environment.IsEnvironment("Docker"))
 {
     app.UseSwagger();
