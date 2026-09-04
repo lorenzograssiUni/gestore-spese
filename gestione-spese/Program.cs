@@ -1,36 +1,42 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using gestione_spese.Data;
 using gestione_spese.Services;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddHttpClient();
-
-// Add ApplicationDbContext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+// DB
+var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "gestore_spese.db");
+if (builder.Environment.IsEnvironment("Docker"))
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    dbPath = "/app/data/app.db";
+}
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite($"Data Source={dbPath}"));
 
-    // In Docker environment use SQLite, otherwise use SQL Server
-    if (builder.Environment.EnvironmentName == "Docker")
+// CORS
+var frontendUrls = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        options.UseSqlite(connectionString);
-    }
-    else
-    {
-        options.UseSqlServer(connectionString);
-    }
+        policy.WithOrigins(frontendUrls)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
-// Configure JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key not configured");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer not configured");
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience not configured");
+// JWT
+var jwtSecret = builder.Configuration["Jwt:SecretKey"] 
+                ?? throw new InvalidOperationException("Jwt:SecretKey non configurato");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "gestore-spese";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "gestore-spese-client";
 
 builder.Services.AddAuthentication(options =>
 {
@@ -47,34 +53,55 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
         ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-        ClockSkew = TimeSpan.Zero
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
     };
 });
 
 builder.Services.AddAuthorization();
 
-// Register JwtTokenService
-builder.Services.AddScoped<JwtTokenService>();
+// Servizi
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+// Controller
+builder.Services.AddControllers();
+
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.CustomSchemaIds(type => type.FullName);
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Description = "Inserisci il token JWT nella forma: Bearer <token>"
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { "Bearer", Array.Empty<string>() }
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (!app.Environment.IsEnvironment("Docker"))
 {
-    app.UseHsts();
+    app.UseSwagger();
+    app.UseSwaggerUI(options => { options.RoutePrefix = "swagger"; });
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapControllers();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+}
 
 app.Run();
